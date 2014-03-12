@@ -165,6 +165,6 @@ module.exports = function confit(options, callback) {
     config.defaults(shorty.resolve(file.data));
 
     // force async until new shortstop is integrated
-    config = wrap(config, shorty)
+    config = wrap(config, shorty);
     setImmediate(callback.bind(null, null, config));
 };
