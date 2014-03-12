@@ -3,6 +3,7 @@
 var fs = require('fs');
 var path = require('path');
 var nconf = require('nconf');
+var shush = require('shush');
 var caller = require('caller');
 var thing = require('core-util-is');
 var shortstop = require('shortstop');
@@ -10,23 +11,7 @@ var env = require('./lib/env');
 
 
 /**
- * Creates a local nconf provider instance. NO GLOBAL!
- * @returns {Object} an nconf provider
- */
-function provider() {
-    var config;
-
-    config = new nconf.Provider();
-    config.add('argv');
-    config.add('env');
-    config.add('memory');
-
-    return environment(config);
-}
-
-
-/**
- * Initializes environment convenience properties in the provided nconf provider.
+ * Initializes environment convenience props in the provided nconf provider.
  * @param config an nconf Provider.
  * @returns {Object} the newly configured nconf Provider.
  */
@@ -39,8 +24,12 @@ function environment(config) {
     // Normalize env and set convenience values.
     Object.keys(env).forEach(function (current) {
         var match;
+
         match = env[current].test(nodeEnv);
-        match && (nodeEnv = current);
+        if (match) {
+            (nodeEnv = current);
+        }
+
         data[current] = match;
     });
 
@@ -61,6 +50,21 @@ function environment(config) {
     return config;
 }
 
+
+/**
+ * Creates a local nconf provider instance. NO GLOBAL!
+ * @returns {Object} an nconf provider
+ */
+function provider() {
+    var config;
+
+    config = new nconf.Provider();
+    config.add('argv');
+    config.add('env');
+    config.add('memory');
+
+    return environment(config);
+}
 
 /**
  * Creates a file loader that uses the provided `basedir`.
@@ -115,10 +119,10 @@ function wrap(config) {
  * Main module entrypoint. Creates a confit config object using the provided
  * options.
  * @param options the configuration settings for this config instance.
- * @param callback the continuation function to which error or config object will be passed.
+ * @param callback the function to which error or config object will be passed.
  */
 module.exports = function confit(options, callback) {
-    var shorty, config, load, file, impl;
+    var shorty, config, load, impl;
 
     // Normalize arguments
     if (thing.isFunction(options)) {
@@ -131,6 +135,7 @@ module.exports = function confit(options, callback) {
     }
 
     options = options || {};
+    options.defaults = options.defaults || 'config.json';
 
 
     // Configure shortstop using provided protocols
@@ -150,7 +155,7 @@ module.exports = function confit(options, callback) {
     load = loader(config.get('basedir'));
     impl = wrap(config);
 
-    [ env + '.json', 'config.json' ].forEach(function (file) {
+    [ env + '.json', options.defaults ].forEach(function (file) {
         file = load(file);
         impl.use(file.name, shorty.resolve(file.data));
     });

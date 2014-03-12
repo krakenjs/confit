@@ -75,7 +75,6 @@ current `NODE_ENV` setting, defaulting to `development`. It also normalizes
 becomes `production`, etc.
 ```javascript
 // NODE_ENV='dev'
-
 config.get('NODE_ENV');        // 'dev'
 config.get('env:env');         // 'development'
 config.get('env:development'); // true
@@ -87,7 +86,6 @@ config.get('env:production');  // false
 
 ```javascript
 // NODE_ENV='custom'
-
 config.get('NODE_ENV');        // 'custom'
 config.get('env:env');         // 'custom'
 config.get('env:development'); // false
