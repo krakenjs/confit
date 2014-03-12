@@ -6,6 +6,7 @@ It will also process the loaded files using any configured
 [shortstop](https://github.com/paypal/shortstop) protocol handlers.
 (See **Options** below.)
 
+[![Build Status](https://travis-ci.org/totherik/confit.png)](https://travis-ci.org/totherik/confit)
 
 ## Usage
 ```javascript
