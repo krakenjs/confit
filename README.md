@@ -98,7 +98,6 @@ config.get('env:development'); // true
 config.get('env:test');        // false
 config.get('env:staging');     // false
 config.get('env:production');  // false
-
 ```
 
 ```javascript
