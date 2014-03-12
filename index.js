@@ -40,7 +40,7 @@ function environment(config) {
     data.env = nodeEnv;
 
     // Add derived environment data to config.
-    config.use('environment', {
+    config.overrides({
         type: 'literal',
         store: {
             env: data
@@ -93,7 +93,7 @@ function loader(basedir) {
  * Wraps the provided nconf Provider in a simpler convenience API.
  * @param config an nconf Provider.
  */
-function wrap(config) {
+function wrap(config, preprocessor) {
     return {
 
         get: function get(key) {
@@ -104,11 +104,9 @@ function wrap(config) {
             return config.set(key, value);
         },
 
-        use: function use(name, obj) {
-            config.use(name, {
-                type: 'literal',
-                store: obj
-            });
+        use: function use(obj) {
+            // Merge into memory store.
+            return config.merge(preprocessor.resolve(obj));
         }
 
     };
@@ -122,7 +120,7 @@ function wrap(config) {
  * @param callback the function to which error or config object will be passed.
  */
 module.exports = function confit(options, callback) {
-    var shorty, config, load, impl;
+    var shorty, config, load, file;
 
     // Normalize arguments
     if (thing.isFunction(options)) {
@@ -136,6 +134,7 @@ module.exports = function confit(options, callback) {
 
     options = options || {};
     options.defaults = options.defaults || 'config.json';
+    options.basedir = options.basedir || path.dirname(caller());
 
 
     // Configure shortstop using provided protocols
@@ -147,19 +146,24 @@ module.exports = function confit(options, callback) {
     }
 
 
+    load = loader(options.basedir);
+
     // Create provider and initialize.
     config = provider();
-    config.set('basedir', options.basedir || path.dirname(caller()));
+    config.set('basedir', options.basedir);
 
-    // create file loader and confit instance
-    load = loader(config.get('basedir'));
-    impl = wrap(config);
-
-    [ env + '.json', options.defaults ].forEach(function (file) {
-        file = load(file);
-        impl.use(file.name, shorty.resolve(file.data));
+    // Load env-specific config
+    file = load(config.get('env:env') + '.json');
+    config.use(file.name, {
+        type: 'literal',
+        store: shorty.resolve(file.data)
     });
 
+    // Set defaults
+    file = load(options.defaults);
+    config.defaults(shorty.resolve(file.data));
+
     // force async until new shortstop is integrated
-    setImmediate(callback.bind(null, null, impl));
+    config = wrap(config, shorty)
+    setImmediate(callback.bind(null, null, config));
 };

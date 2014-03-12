@@ -91,6 +91,75 @@ test('confit', function (t) {
             });
         });
 
+
+        t.test('not set', function (t) {
+            process.env.NODE_ENV = '';
+            confit(function (err, config) {
+                t.error(err);
+                t.equal(config.get('NODE_ENV'), '');
+                t.equal(config.get('env:env'), 'development');
+                t.ok(config.get('env:development'));
+                t.notOk(config.get('env:test'));
+                t.notOk(config.get('env:staging'));
+                t.notOk(config.get('env:production'));
+                t.end();
+            });
+        });
+
+    });
+
+
+    test('overrides', function (t) {
+        var basedir;
+
+        process.env.NODE_ENV = 'dev';
+        basedir = path.join(__dirname, 'fixtures', 'defaults');
+
+        confit(basedir, function (err, config) {
+            t.error(err);
+
+            // File-based overrides
+            t.equal(config.get('default'), 'config');
+            t.equal(config.get('override'), 'development');
+
+            // Manual overrides
+            config.set('override', 'runtime');
+            t.equal(config.get('override'), 'runtime');
+
+            config.use({ override: 'literal' });
+            t.equal(config.get('override'), 'literal');
+
+            t.end();
+        });
+
+    });
+
+
+    test('protocols', function (t) {
+        var basedir, options;
+
+        process.env.NODE_ENV = 'dev';
+        basedir = path.join(__dirname, 'fixtures', 'defaults');
+        options = {
+            basedir: basedir,
+            protocols: {
+                path: function (value) {
+                    return path.join(basedir, value);
+                }
+            }
+        };
+
+        confit(options, function (err, config) {
+            t.error(err);
+            // Ensure handler was run correctly on default file.
+            t.equal(config.get('path'), path.join(basedir, 'development.json'));
+
+            // Ensure overrides get processed
+            config.use({ path: "path:" + path.basename(__filename) });
+            t.equal(config.get('path'), path.join(basedir, path.basename(__filename)));
+
+            t.end();
+        });
     });
 
 });

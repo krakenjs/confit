@@ -1,0 +1,4 @@
+{
+    "override": "development",
+    "path": "path:./development.json"
+}
