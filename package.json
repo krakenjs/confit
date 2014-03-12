@@ -1,0 +1,40 @@
+{
+  "name": "confit",
+  "version": "0.0.0",
+  "description": "Environment-aware configuration.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "tape test/*.js",
+    "cover": "istanbul cover tape -- test/*.js",
+    "lint": "jshint -c .jshintrc index.js lib/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/totherik/confit.git"
+  },
+  "keywords": [
+    "application",
+    "configuration",
+    "config"
+  ],
+  "author": "Erik Toth <totherik@gmail.com>",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "gitHead": "4bc76f5804f42d55cacd5cdbc3661ad1c605b3ca",
+  "devDependencies": {
+    "tape": "~2.10.2",
+    "jshint": "~2.4.4",
+    "istanbul": "~0.2.6"
+  },
+  "dependencies": {
+    "nconf": "~0.6.9",
+    "shortstop": "0.0.1",
+    "caller": "0.0.1",
+    "core-util-is": "~1.0.1",
+    "async": "~0.2.10",
+    "shush": "0.0.1"
+  }
+}
