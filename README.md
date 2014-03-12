@@ -53,7 +53,7 @@ var handlers = require('shortstop-handlers');
 
 var options = {
     basedir: path.join(__dirname, 'config');
-    handlers: {
+    protocols: {
         file: handlers.file,
         glob: handlers.glob
     }
