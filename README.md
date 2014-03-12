@@ -71,13 +71,13 @@ confit(options, function (err, config) {
 ## API
 * `get(key)` - Retrieve the value for a given key.
 * `set(key, value)` - Set a value for the given key.
-* `use(name, data)`- Load an object into config for a given name.
+* `use(obj)`- Load an object into config.
 
 ```javascript
 config.set('foo', 'bar');
 config.get('foo'); // 'bar'
 
-config.use('my-config', { foo: 'baz' });
+config.use({ foo: 'baz' });
 config.get('foo'); // 'baz'
 ```
 
