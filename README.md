@@ -71,14 +71,16 @@ confit(options, function (err, config) {
 ## API
 * `get(key)` - Retrieve the value for a given key.
 * `set(key, value)` - Set a value for the given key.
-* `use(obj)`- Load an object into config.
+* `use(obj, callback)`- Processed object with shortstop and loads into config.
 
 ```javascript
 config.set('foo', 'bar');
 config.get('foo'); // 'bar'
 
-config.use({ foo: 'baz' });
-config.get('foo'); // 'baz'
+config.use({ foo: 'baz' }, function (err) {
+    config.get('foo'); // 'baz'
+});
+
 ```
 
 ## Default Behavior

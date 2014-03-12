@@ -126,10 +126,11 @@ test('confit', function (t) {
             config.set('override', 'runtime');
             t.equal(config.get('override'), 'runtime');
 
-            config.use({ override: 'literal' });
-            t.equal(config.get('override'), 'literal');
-
-            t.end();
+            config.use({ override: 'literal' }, function (err) {
+                t.error(err);
+                t.equal(config.get('override'), 'literal');
+                t.end();
+            });
         });
 
     });
@@ -155,10 +156,12 @@ test('confit', function (t) {
             t.equal(config.get('path'), path.join(basedir, 'development.json'));
 
             // Ensure overrides get processed
-            config.use({ path: "path:" + path.basename(__filename) });
-            t.equal(config.get('path'), path.join(basedir, path.basename(__filename)));
+            config.use({ path: "path:" + path.basename(__filename) }, function (err) {
+                t.error(err);
+                t.equal(config.get('path'), path.join(basedir, path.basename(__filename)));
+                t.end();
+            });
 
-            t.end();
         });
     });
 

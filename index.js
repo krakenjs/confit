@@ -105,9 +105,11 @@ function wrap(config, preprocessor) {
             return config.set(key, value);
         },
 
-        use: function use(obj) {
+        use: function use(obj, callback) {
             // Merge into memory store.
-            return config.merge(preprocessor.resolve(obj));
+            // XXX: Shim async until shortstop@1.0
+            config.merge(preprocessor.resolve(obj));
+            setImmediate(callback.bind(null, null));
         }
 
     };
