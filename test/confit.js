@@ -126,11 +126,9 @@ test('confit', function (t) {
             config.set('override', 'runtime');
             t.equal(config.get('override'), 'runtime');
 
-            config.use({ override: 'literal' }, function (err) {
-                t.error(err);
-                t.equal(config.get('override'), 'literal');
-                t.end();
-            });
+            config.use({ override: 'literal' });
+            t.equal(config.get('override'), 'literal');
+            t.end();
         });
 
     });
@@ -155,13 +153,9 @@ test('confit', function (t) {
             // Ensure handler was run correctly on default file.
             t.equal(config.get('path'), path.join(basedir, 'development.json'));
 
-            // Ensure overrides get processed
-            config.use({ path: "path:" + path.basename(__filename) }, function (err) {
-                t.error(err);
-                t.equal(config.get('path'), path.join(basedir, path.basename(__filename)));
-                t.end();
-            });
-
+            config.use({ path: __filename });
+            t.equal(config.get('path'), __filename);
+            t.end();
         });
     });
 
