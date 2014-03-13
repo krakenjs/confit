@@ -87,7 +87,7 @@ function loader(basedir) {
  * Wraps the provided nconf Provider in a simpler convenience API.
  * @param config an nconf Provider.
  */
-function wrap(config, preprocessor) {
+function wrap(config) {
     return {
 
         get: function get(key) {
@@ -168,6 +168,6 @@ module.exports = function confit(options, callback) {
     config.defaults(shorty.resolve(file.data));
 
     // XXX: Force async until shortstop@1.0 is integrated.
-    config = wrap(config, shorty);
+    config = wrap(config);
     setImmediate(callback.bind(null, null, config));
 };
