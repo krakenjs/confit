@@ -102,13 +102,20 @@ function wrap(config, preprocessor) {
         },
 
         set: function set(key, value) {
-            return config.set(key, value);
+            config.set(key, value);
         },
 
         use: function use(obj, callback) {
             // Merge into memory store.
-            // XXX: Shim async until shortstop@1.0
+            // This must be done b/c nconf applies things
+            // kind of backward. If we just used a literal
+            // store it would get added to the END so no
+            // values would be overridden. Additionally,
+            // only the memory store is writable at this
+            // point so all updates live there.
             config.merge(preprocessor.resolve(obj));
+
+            // XXX: Shim async until shortstop@1.0
             setImmediate(callback.bind(null, null));
         }
 
