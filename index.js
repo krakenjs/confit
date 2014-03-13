@@ -26,9 +26,7 @@ function environment(config) {
         var match;
 
         match = env[current].test(nodeEnv);
-        if (match) {
-            (nodeEnv = current);
-        }
+        if (match) { nodeEnv = current; }
 
         data[current] = match;
     });
@@ -75,15 +73,10 @@ function provider() {
 function loader(basedir) {
 
     return function load(file) {
-        var config, filename, data;
-
-        config = path.join(basedir, file);
-        filename = path.basename(file, path.extname(file));
-        data = fs.existsSync(config) ? shush(config) : {};
-
+        var config = path.join(basedir, file);
         return {
-            name: filename,
-            data: data
+            name: path.basename(file, path.extname(file)),
+            data: fs.existsSync(config) ? shush(config) : {}
         };
     };
 
