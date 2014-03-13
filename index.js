@@ -158,18 +158,19 @@ module.exports = function confit(options, callback) {
     config = provider();
     config.set('basedir', options.basedir);
 
-    // Load the env-specific config file.
+    // Load the env-specific config file as a literal
+    // datastore. Can't use `file` b/c we preprocess it.
     file = load(config.get('env:env') + '.json');
     config.use(file.name, {
         type: 'literal',
         store: shorty.resolve(file.data)
     });
 
-    // Set defaults from file.
+    // Set defaults from `defaults` file.
     file = load(options.defaults);
     config.defaults(shorty.resolve(file.data));
 
-    // force async until new shortstop is integrated
+    // XXX: Force async until shortstop@1.0 is integrated.
     config = wrap(config, shorty);
     setImmediate(callback.bind(null, null, config));
 };
