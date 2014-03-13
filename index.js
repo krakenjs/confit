@@ -131,10 +131,12 @@ module.exports = function confit(options, callback) {
         options = undefined;
     }
 
+    // ... still normalizing
     if (thing.isString(options)) {
         options = { basedir: options };
     }
 
+    // ¯\_(ツ)_/¯ ... still normalizing
     options = options || {};
     options.defaults = options.defaults || 'config.json';
     options.basedir = options.basedir || path.dirname(caller());
@@ -148,21 +150,22 @@ module.exports = function confit(options, callback) {
         });
     }
 
-
+    // Our file loader
     load = loader(options.basedir);
 
-    // Create provider and initialize.
+    // Create config provider and initialize basedir
+    // TODO: Add basedir to overrides so it's readonly?
     config = provider();
     config.set('basedir', options.basedir);
 
-    // Load env-specific config
+    // Load the env-specific config file.
     file = load(config.get('env:env') + '.json');
     config.use(file.name, {
         type: 'literal',
         store: shorty.resolve(file.data)
     });
 
-    // Set defaults
+    // Set defaults from file.
     file = load(options.defaults);
     config.defaults(shorty.resolve(file.data));
 
