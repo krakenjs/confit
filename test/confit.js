@@ -163,4 +163,26 @@ test('confit', function (t) {
         });
     });
 
+
+    test('error', function (t) {
+        var basedir, options;
+
+        process.env.NODE_ENV = 'dev';
+        basedir = path.join(__dirname, 'fixtures', 'defaults');
+        options = {
+            basedir: basedir,
+            protocols: {
+                path: function (value) {
+                    throw new Error('exec');
+                }
+            }
+        };
+
+        confit(options, function (err, config) {
+            t.ok(err);
+            t.notOk(config);
+            t.end();
+        });
+    });
+
 });
