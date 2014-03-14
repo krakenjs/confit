@@ -107,15 +107,11 @@ function wrap(config) {
         },
 
         set: function set(key, value) {
-            var original, current;
-
-            original = this.get(key);
+            // NOTE: There was discussion around potentially warning
+            // on attempts to set immutable values. The would require
+            // a minimum of one additional operation, which was deemed
+            // overkill for a small/unlikely scenrio. Can revisit.
             config.set(key, value);
-            current = this.get(key);
-
-            if (value !== original && value !== current) {
-                debug('WARNING: Property \'%s\' is readonly.', key);
-            }
         },
 
         use: function use(obj) {
