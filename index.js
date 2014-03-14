@@ -1,6 +1,5 @@
 'use strict';
 
-var fs = require('fs');
 var path = require('path');
 var nconf = require('nconf');
 var shush = require('shush');
@@ -9,6 +8,7 @@ var thing = require('core-util-is');
 var shortstop = require('shortstop');
 var debug = require('debuglog')('confit');
 var env = require('./lib/env');
+var util = require('./lib/util');
 
 
 /**
@@ -74,21 +74,14 @@ function provider() {
 function loader(basedir) {
 
     return function load(file) {
-        var config, name, data;
+        var name, config;
 
-        config = path.join(basedir, file);
         name = path.basename(file, path.extname(file));
-
-        if (fs.existsSync(config)) {
-            data = shush(config);
-        } else {
-            data = {};
-            debug('WARNING: Unable to load file \'%s\'', config);
-        }
+        config = path.join(basedir, file);
 
         return {
             name: name,
-            data: data
+            data: shush(config)
         };
     };
 
@@ -134,7 +127,7 @@ function wrap(config) {
  * @param callback the function to which error or config object will be passed.
  */
 module.exports = function confit(options, callback) {
-    var shorty, config, load, file;
+    var shorty, config, tasks, load;
 
     // Normalize arguments
     if (thing.isFunction(options)) {
@@ -161,27 +154,48 @@ module.exports = function confit(options, callback) {
         });
     }
 
-    // Our file loader
-    load = loader(options.basedir);
-
     // Create config provider and initialize basedir
     // TODO: Add basedir to overrides so it's readonly?
     config = provider();
     config.set('basedir', options.basedir);
 
+
+    tasks = [];
+    load = loader(options.basedir);
+
+
     // Load the env-specific config file as a literal
     // datastore. Can't use `file` b/c we preprocess it.
-    file = load(config.get('env:env') + '.json');
-    config.use(file.name, {
-        type: 'literal',
-        store: shorty.resolve(file.data)
+    tasks.push(function (done) {
+        var file = load(config.get('env:env') + '.json');
+        config.use(file.name, {
+            type: 'literal',
+            store: shorty.resolve(file.data)
+        });
+        done();
     });
 
-    // Set defaults from `defaults` file.
-    file = load(options.defaults);
-    config.defaults(shorty.resolve(file.data));
 
-    // XXX: Force async until shortstop@1.0 is integrated.
-    config = wrap(config);
-    setImmediate(callback.bind(null, null, config));
+    // Set defaults from `defaults` file.
+    tasks.push(function (done) {
+        var file = load(options.defaults);
+        config.defaults(shorty.resolve(file.data));
+        done();
+    });
+
+
+    util.each(tasks, function (err) {
+        // XXX: Force async until shortstop@1.0 is integrated.
+
+        // Only report unusual errors. MODULE_NOT_FOUND is an
+        // acceptable scenario b/c no files are truly requried.
+        if (thing.isObject(err) && err.code !== 'MODULE_NOT_FOUND') {
+            setImmediate(callback.bind(null, err));
+            return;
+        }
+
+        config = wrap(config);
+        setImmediate(callback.bind(null, null, config));
+    });
+
 };
