@@ -7,6 +7,7 @@ var shush = require('shush');
 var caller = require('caller');
 var thing = require('core-util-is');
 var shortstop = require('shortstop');
+var debug = require('debuglog')('confit');
 var env = require('./lib/env');
 
 
@@ -15,11 +16,10 @@ var env = require('./lib/env');
  * @param config an nconf Provider.
  * @returns {Object} the newly configured nconf Provider.
  */
-function environment(config) {
-    var nodeEnv, data;
+function environment(nodeEnv) {
+    var data = {};
 
-    nodeEnv = config.get('NODE_ENV') || 'development';
-    data = {};
+    debug('NODE_ENV set to \'%s\'', nodeEnv);
 
     // Normalize env and set convenience values.
     Object.keys(env).forEach(function (current) {
@@ -31,21 +31,14 @@ function environment(config) {
         data[current] = match;
     });
 
+    debug('env:env set to \'%s\'', nodeEnv);
+
     // Set (or re-set) env:{nodeEnv} value in case
     // NODE_ENV was not one of our predetermined env
     // keys (so `config.get('env:blah')` will be true).
     data[nodeEnv] = true;
     data.env = nodeEnv;
-
-    // Add derived environment data to config.
-    config.overrides({
-        type: 'literal',
-        store: {
-            env: data
-        }
-    });
-
-    return config;
+    return { env: data };
 }
 
 
@@ -59,9 +52,17 @@ function provider() {
     config = new nconf.Provider();
     config.add('argv');
     config.add('env');
+
+    // Put override before memory to ensure env
+    // values are immutable.
+    config.overrides({
+        type: 'literal',
+        store: environment(config.get('NODE_ENV') || 'development')
+    });
+
     config.add('memory');
 
-    return environment(config);
+    return config;
 }
 
 
@@ -73,10 +74,21 @@ function provider() {
 function loader(basedir) {
 
     return function load(file) {
-        var config = path.join(basedir, file);
+        var config, name, data;
+
+        config = path.join(basedir, file);
+        name = path.basename(file, path.extname(file));
+
+        if (fs.existsSync(config)) {
+            data = shush(config);
+        } else {
+            data = {};
+            debug('WARNING: Unable to load file \'%s\'', config);
+        }
+
         return {
-            name: path.basename(file, path.extname(file)),
-            data: fs.existsSync(config) ? shush(config) : {}
+            name: name,
+            data: data
         };
     };
 
@@ -95,17 +107,23 @@ function wrap(config) {
         },
 
         set: function set(key, value) {
+            var original, current;
+
+            original = this.get(key);
             config.set(key, value);
+            current = this.get(key);
+
+            if (value !== original && value !== current) {
+                debug('WARNING: Property \'%s\' is readonly.', key);
+            }
         },
 
         use: function use(obj) {
             // Merge into memory store.
-            // This must be done b/c nconf applies things
-            // kind of backward. If we just used a literal
-            // store it would get added to the END so no
-            // values would be overridden. Additionally,
-            // only the memory store is writable at this
-            // point so all updates live there.
+            // This must be done b/c nconf applies things kind of backward.
+            // If we just used a literal store it would get added to the END
+            // so no values would be overridden. Additionally, only the memory
+            // store is writable at this point so all updates live there.
             config.merge(obj);
         }
 

@@ -128,6 +128,10 @@ test('confit', function (t) {
 
             config.use({ override: 'literal' });
             t.equal(config.get('override'), 'literal');
+
+            // env values should be immutable
+            config.set('env:env', 'foobar');
+            t.equal(config.get('env:env'), 'development');
             t.end();
         });
 
