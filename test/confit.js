@@ -19,6 +19,7 @@ test('confit', function (t) {
         t.test('dev', function (t) {
             process.env.NODE_ENV = 'dev';
             confit(function (err, config) {
+                console.log(err);
                 t.error(err);
                 t.equal(config.get('NODE_ENV'), 'dev');
                 t.equal(config.get('env:env'), 'development');
