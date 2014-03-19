@@ -190,10 +190,14 @@ module.exports = function confit(options, callback) {
         // Only report unusual errors. MODULE_NOT_FOUND is an
         // acceptable scenario b/c no files are truly requried.
         function failable(err) {
-            if (thing.isObject(err) && err.code !== 'MODULE_NOT_FOUND') {
-                setImmediate(callback.bind(null, err));
-                return true;
+            if (thing.isObject(err)) {
+                if (err.code !== 'MODULE_NOT_FOUND') {
+                    setImmediate(callback.bind(null, err));
+                    return true;
+                }
+                debug('WARNING:', err.message);
             }
+
             return false;
         }
 
