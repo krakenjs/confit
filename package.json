@@ -31,11 +31,11 @@
   },
   "dependencies": {
     "nconf": "~0.6.9",
-    "shortstop": "0.0.1",
     "caller": "0.0.1",
     "core-util-is": "~1.0.1",
     "async": "~0.2.10",
     "shush": "0.0.1",
-    "debuglog": "~1.0.1"
+    "debuglog": "~1.0.1",
+    "shortstop": "~1.0.0"
   }
 }

@@ -14,6 +14,17 @@ test('confit', function (t) {
     });
 
 
+    t.test('api', function (t) {
+        confit(function (err, config) {
+            t.error(err);
+            t.equal(typeof config.get, 'function');
+            t.equal(typeof config.set, 'function');
+            t.equal(typeof config.use, 'function');
+            t.end();
+        });
+    });
+
+
     t.test('environment', function (t) {
 
         t.test('dev', function (t) {
@@ -109,7 +120,37 @@ test('confit', function (t) {
     });
 
 
-    test('overrides', function (t) {
+    t.test('defaults', function (t) {
+        var basedir;
+
+        // This case should still load the default values
+        // even though a 'test.json' file does not exist.
+        process.env.NODE_ENV = 'test';
+        basedir = path.join(__dirname, 'fixtures', 'defaults');
+
+        confit(basedir, function (err, config) {
+            t.error(err);
+
+            // File-based overrides
+            t.equal(config.get('default'), 'config');
+            t.equal(config.get('override'), 'config');
+
+            // Manual overrides
+            config.set('override', 'runtime');
+            t.equal(config.get('override'), 'runtime');
+
+            config.use({ override: 'literal' });
+            t.equal(config.get('override'), 'literal');
+
+            // env values should be immutable
+            config.set('env:env', 'foobar');
+            t.equal(config.get('env:env'), 'test');
+            t.end();
+        });
+    });
+
+
+    t.test('overrides', function (t) {
         var basedir;
 
         process.env.NODE_ENV = 'dev';
@@ -138,7 +179,7 @@ test('confit', function (t) {
     });
 
 
-    test('protocols', function (t) {
+    t.test('protocols', function (t) {
         var basedir, options;
 
         process.env.NODE_ENV = 'dev';
@@ -154,7 +195,8 @@ test('confit', function (t) {
 
         confit(options, function (err, config) {
             t.error(err);
-            // Ensure handler was run correctly on default file.
+            // Ensure handler was run correctly on default file
+            t.equal(config.get('misc'), path.join(basedir, 'config.json'));
             t.equal(config.get('path'), path.join(basedir, 'development.json'));
 
             config.use({ path: __filename });
@@ -164,7 +206,7 @@ test('confit', function (t) {
     });
 
 
-    test('error', function (t) {
+    t.test('error', function (t) {
         var basedir, options;
 
         process.env.NODE_ENV = 'dev';

@@ -157,7 +157,7 @@ module.exports = function confit(options, callback) {
     // Create config provider and initialize basedir
     // TODO: Add basedir to overrides so it's readonly?
     config = provider();
-    config.set('basedir', options.basedir);
+    config.set('configdir', options.basedir);
 
 
     tasks = [];
@@ -168,43 +168,55 @@ module.exports = function confit(options, callback) {
     // datastore. Can't use `file` b/c we preprocess it.
     tasks.push(function (done) {
         var file = load(config.get('env:env') + '.json');
-        config.use(file.name, {
-            type: 'literal',
-            store: shorty.resolve(file.data)
+        shorty.resolve(file.data, function (err, data) {
+            if (err) {
+                done(err);
+                return;
+            }
+
+            config.use(file.name, {
+                type: 'literal',
+                store: data
+            });
+            done();
         });
-        done();
     });
 
 
     // Set defaults from `defaults` file.
     tasks.push(function (done) {
         var file = load(options.defaults);
-        config.defaults(shorty.resolve(file.data));
-        done();
+        shorty.resolve(file.data, function (err, data) {
+            if (err) {
+                done(err);
+                return;
+            }
+            config.defaults(data);
+            done();
+        })
     });
 
 
     util.every(tasks, function (errs) {
-        // XXX: Force async until shortstop@1.0 is integrated.
 
-        // Only report unusual errors. MODULE_NOT_FOUND is an
-        // acceptable scenario b/c no files are truly requried.
         function failable(err) {
             if (thing.isObject(err)) {
+                // Only report unusual errors. MODULE_NOT_FOUND is an
+                // acceptable scenario b/c no files are truly required.
                 if (err.code !== 'MODULE_NOT_FOUND') {
-                    setImmediate(callback.bind(null, err));
+                    callback(err);
                     return true;
                 }
                 debug('WARNING:', err.message);
             }
-
             return false;
         }
 
         if (!errs.some(failable)) {
             config = wrap(config);
-            setImmediate(callback.bind(null, null, config));
+            callback(null, config);
         }
+
     });
 
 };
