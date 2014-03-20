@@ -120,9 +120,7 @@ function wrap(config, loadFile) {
             config.merge(obj);
         },
 
-        loadFile: function (filepath, callback) {
-            loadFile(filepath, callback);
-        }
+        loadFile: loadFile
 
     };
 }
