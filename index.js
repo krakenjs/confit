@@ -219,25 +219,20 @@ module.exports = function confit(options, callback) {
         }
 
         function loadFile(filepath, callback) {
-            var file, error;
+            var file;
 
             try {
                 file = load(filepath);
                 shorty.resolve(file.data, function (err, data) {
                     if (err) {
-                        error = new Error('Unable to load config ' + file.name);
-                        error.cause = err;
-                        callback(error);
+                        callback(err);
                         return;
                     }
                     config.use(data);
                     callback(null, config);
                 });
             } catch (err) {
-                error = new Error('Unable to load file ' + filepath);
-                error.cause = err;
-                callback(error);
-                return;
+                callback(err);
             }
         }
 
