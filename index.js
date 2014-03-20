@@ -193,7 +193,7 @@ module.exports = function confit(options, callback) {
             }
             config.defaults(data);
             done();
-        })
+        });
     });
 
 
