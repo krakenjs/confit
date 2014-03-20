@@ -12,15 +12,18 @@ test('each', function (t) {
         };
     }
 
-    function thrower() {
+    function thrower(obj) {
+        obj.count += 1;
         throw new Error('confit');
     }
 
-    function passer(done) {
-        try {
-            thrower();
-        } catch (err) {
-            done(err);
+    function passer(obj) {
+        return function pass(done) {
+            try {
+                thrower(obj);
+            } catch (err) {
+                done(err);
+            }
         }
     }
 
@@ -30,8 +33,12 @@ test('each', function (t) {
         state = { count: 0 };
         tasks = [ tasker(state), tasker(state), tasker(state) ];
 
-        util.each(tasks, function (err) {
-            t.error(err);
+        util.every(tasks, function (errs) {
+            t.ok(errs);
+            t.equal(errs.length, 3);
+            t.equal(errs[0], null);
+            t.equal(errs[1], null);
+            t.equal(errs[2], null);
             t.equal(state.count, 3);
             t.end();
         });
@@ -42,12 +49,16 @@ test('each', function (t) {
         var state, tasks;
 
         state = { count: 0 };
-        tasks = [ tasker(state), passer, tasker(state) ];
+        tasks = [ tasker(state), passer(state), tasker(state) ];
 
-        util.each(tasks, function (err) {
-            t.ok(err);
-            t.equal(err.message, 'confit');
-            t.equal(state.count, 1);
+        util.every(tasks, function (errs) {
+            t.ok(errs);
+            t.equal(errs.length, 3);
+            t.equal(errs[0], null);
+            t.ok(errs[1]);
+            t.equal(errs[1].message, 'confit');
+            t.equal(errs[2], null);
+            t.equal(state.count, 3);
             t.end();
         });
     });
@@ -57,12 +68,16 @@ test('each', function (t) {
         var state, tasks;
 
         state = { count: 0 };
-        tasks = [ tasker(state), thrower, tasker(state) ];
+        tasks = [ tasker(state), thrower.bind(null, state), tasker(state) ];
 
-        util.each(tasks, function (err) {
-            t.ok(err);
-            t.equal(err.message, 'confit');
-            t.equal(state.count, 1);
+        util.every(tasks, function (errs) {
+            t.ok(errs);
+            t.equal(errs.length, 3);
+            t.equal(errs[0], null);
+            t.ok(errs[1]);
+            t.equal(errs[1].message, 'confit');
+            t.equal(errs[2], null);
+            t.equal(state.count, 3);
             t.end();
         });
     });

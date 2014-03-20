@@ -184,18 +184,27 @@ module.exports = function confit(options, callback) {
     });
 
 
-    util.each(tasks, function (err) {
+    util.every(tasks, function (errs) {
         // XXX: Force async until shortstop@1.0 is integrated.
 
         // Only report unusual errors. MODULE_NOT_FOUND is an
         // acceptable scenario b/c no files are truly requried.
-        if (thing.isObject(err) && err.code !== 'MODULE_NOT_FOUND') {
-            setImmediate(callback.bind(null, err));
-            return;
+        function failable(err) {
+            if (thing.isObject(err)) {
+                if (err.code !== 'MODULE_NOT_FOUND') {
+                    setImmediate(callback.bind(null, err));
+                    return true;
+                }
+                debug('WARNING:', err.message);
+            }
+
+            return false;
         }
 
-        config = wrap(config);
-        setImmediate(callback.bind(null, null, config));
+        if (!errs.some(failable)) {
+            config = wrap(config);
+            setImmediate(callback.bind(null, null, config));
+        }
     });
 
 };
