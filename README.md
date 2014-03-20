@@ -30,6 +30,7 @@ confit(basedir, function (err, config) {
     config.get; // Function
     config.set; // Function
     config.use; // Function
+    config.loadFile; // Function
 
     config.get('env:env'); // 'development'
 });
@@ -63,6 +64,7 @@ confit(options, function (err, config) {
     config.get; // Function
     config.set; // Function
     config.use; // Function
+    config.loadFile; // Function
 
     config.get('env:env'); // 'development'
 });
@@ -73,6 +75,7 @@ confit(options, function (err, config) {
 * `get(key)` - Retrieve the value for a given key.
 * `set(key, value)` - Set a value for the given key.
 * `use(obj)` - merge provided object into config.
+* `loadFile(filepath, callback)` - load the given file, applying and shortstop handlers, into memory.
 
 ```javascript
 config.set('foo', 'bar');

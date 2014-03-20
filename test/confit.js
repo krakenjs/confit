@@ -20,6 +20,7 @@ test('confit', function (t) {
             t.equal(typeof config.get, 'function');
             t.equal(typeof config.set, 'function');
             t.equal(typeof config.use, 'function');
+            t.equal(typeof config.loadFile, 'function');
             t.end();
         });
     });
@@ -215,7 +216,7 @@ test('confit', function (t) {
             basedir: basedir,
             protocols: {
                 path: function (value) {
-                    throw new Error('exec');
+                    throw new Error('path');
                 }
             }
         };
@@ -224,6 +225,89 @@ test('confit', function (t) {
             t.ok(err);
             t.notOk(config);
             t.end();
+        });
+    });
+
+
+    t.test('loadFile', function (t) {
+        var basedir;
+
+        process.env.NODE_ENV = 'dev';
+        basedir = path.join(__dirname, 'fixtures', 'defaults');
+
+        confit(basedir, function (err, config) {
+            var file;
+
+            t.error(err);
+            t.ok(config);
+            t.equal(config.get('override'), 'development');
+
+            file = path.join(__dirname, 'fixtures', 'defaults', 'supplemental.json');
+            config.loadFile(file, function (err, config) {
+                t.error(err);
+                t.ok(config);
+                t.equal(config.get('default'), 'config');
+                t.equal(config.get('override'), 'supplemental');
+                t.end();
+            });
+        });
+    });
+
+
+    t.test('loadFile error', function (t) {
+        var options;
+
+        process.env.NODE_ENV = 'dev';
+        options = {
+            basedir: path.join(__dirname, 'fixtures', 'defaults'),
+            protocols: {
+                path: function (value) {
+                    if (value === './supplemental.json') {
+                        throw new Error('supplemental');
+                    }
+                    return value;
+                }
+            }
+        };
+
+
+        confit(options, function (err, config) {
+            var file;
+
+            t.error(err);
+            t.ok(config);
+            t.equal(config.get('override'), 'development');
+
+            file = path.join(__dirname, 'fixtures', 'defaults', 'supplemental.json');
+            config.loadFile(file, function (err, config) {
+                t.ok(err);
+                t.ok(err.cause);
+                t.equal(err.cause.message, 'supplemental');
+                t.end();
+            });
+        });
+    });
+
+
+    t.test('loadFile not found', function (t) {
+        var basedir;
+
+        process.env.NODE_ENV = 'dev';
+        basedir = path.join(__dirname, 'fixtures', 'defaults');
+
+        confit(basedir, function (err, config) {
+            var file;
+
+            t.error(err);
+            t.ok(config);
+
+            file = path.join(__dirname, 'fixtures', 'defaults', 'notfound.json');
+            config.loadFile(file, function (err, config) {
+                t.ok(err);
+                t.ok(err.cause);
+                t.notOk(config);
+                t.end();
+            });
         });
     });
 

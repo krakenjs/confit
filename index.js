@@ -73,11 +73,15 @@ function provider() {
  */
 function loader(basedir) {
 
+    function abs(file) {
+        return path.resolve(file) === file;
+    }
+
     return function load(file) {
         var name, config;
 
         name = path.basename(file, path.extname(file));
-        config = path.join(basedir, file);
+        config = abs(file) ? file : path.join(basedir, file);
 
         return {
             name: name,
@@ -92,7 +96,7 @@ function loader(basedir) {
  * Wraps the provided nconf Provider in a simpler convenience API.
  * @param config an nconf Provider.
  */
-function wrap(config) {
+function wrap(config, loadFile) {
     return {
 
         get: function get(key) {
@@ -114,7 +118,9 @@ function wrap(config) {
             // so no values would be overridden. Additionally, only the memory
             // store is writable at this point so all updates live there.
             config.merge(obj);
-        }
+        },
+
+        loadFile: loadFile
 
     };
 }
@@ -212,8 +218,31 @@ module.exports = function confit(options, callback) {
             return false;
         }
 
+        function loadFile(filepath, callback) {
+            var file, error;
+
+            try {
+                file = load(filepath);
+                shorty.resolve(file.data, function (err, data) {
+                    if (err) {
+                        error = new Error('Unable to load config ' + file.name);
+                        error.cause = err;
+                        callback(error);
+                        return;
+                    }
+                    config.use(data);
+                    callback(null, config);
+                });
+            } catch (err) {
+                error = new Error('Unable to load file ' + filepath);
+                error.cause = err;
+                callback(error);
+                return;
+            }
+        }
+
         if (!errs.some(failable)) {
-            config = wrap(config);
+            config = wrap(config, loadFile);
             callback(null, config);
         }
 
