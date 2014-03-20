@@ -201,7 +201,7 @@ module.exports = function confit(options, callback) {
             }
             config.defaults(data);
             done();
-        })
+        });
     });
 
 
@@ -221,24 +221,24 @@ module.exports = function confit(options, callback) {
         }
 
         function loadFile(filepath, callback) {
-            var file, tmperr;
+            var file, error;
 
             try {
                 file = load(filepath);
                 shorty.resolve(file.data, function (err, data) {
                     if (err) {
-                        tmperr = new Error('Unable to load config ' + file.name);
-                        tmperr.cause = err;
-                        callback(tmperr);
+                        error = new Error('Unable to load config ' + file.name);
+                        error.cause = err;
+                        callback(error);
                         return;
                     }
                     config.use(data);
                     callback(null, config);
-                })
+                });
             } catch (err) {
-                tmperr = new Error('Unable to load file ' + filepath);
-                tmperr.cause = err;
-                callback(tmperr);
+                error = new Error('Unable to load file ' + filepath);
+                error.cause = err;
+                callback(error);
                 return;
             }
         }
