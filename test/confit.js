@@ -281,8 +281,7 @@ test('confit', function (t) {
             file = path.join(__dirname, 'fixtures', 'defaults', 'supplemental.json');
             config.loadFile(file, function (err, config) {
                 t.ok(err);
-                t.ok(err.cause);
-                t.equal(err.cause.message, 'supplemental');
+                t.equal(err.message, 'supplemental');
                 t.end();
             });
         });
@@ -304,7 +303,7 @@ test('confit', function (t) {
             file = path.join(__dirname, 'fixtures', 'defaults', 'notfound.json');
             config.loadFile(file, function (err, config) {
                 t.ok(err);
-                t.ok(err.cause);
+                t.equal(err.code, 'MODULE_NOT_FOUND');
                 t.notOk(config);
                 t.end();
             });
