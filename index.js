@@ -56,6 +56,9 @@ function config(store) {
 
                     obj = obj[prop];
                     if (obj && obj.constructor !== Object) {
+                        // Do not allow traversal into complex types,
+                        // such as Buffer, Date, etc. So, this type
+                        // of key will fail: 'foo:mystring:length'
                         return undefined;
                     }
                 }
