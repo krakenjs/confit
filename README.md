@@ -87,8 +87,8 @@ confit(options).create(function (err, config) {
 
 
 ## Config API
-* `get(key)` - Retrieve the value for a given key.
-* `set(key, value)` - Set a value for the given key.
+* `get(key)` - Retrieve the value for a given key. Colon-delimited keys can be used to traverse the object hierarchy.
+* `set(key, value)` - Set a value for the given key. Colon-delimited keys can be used to traverse the object hierarchy.
 * `use(obj)` - merge provided object into config.
 
 ```javascript
@@ -97,6 +97,9 @@ config.get('foo'); // 'bar'
 
 config.use({ foo: 'baz' });
 config.get('foo'); // 'baz'
+
+config.use({ a: { b: { c: 'd' } } } );
+config.get('a:b:c'); // 'd'
 ```
 
 ## Default Behavior
