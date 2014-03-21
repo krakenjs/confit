@@ -13,11 +13,10 @@ It will also process the loaded files using any configured
 var confit = require('confit');
 ```
 
-### confit(options)
-* `options` (*String* | *Object*) - the base directory in which config files live
-or a configuration object.
-Signature `function (err, config) { /* ... */}
-* Returns a config factory.
+### confit([options])
+* `options` (*String* | *Object*) - the base directory in which config files live or a configuration object. If no
+arguments is provided, defaults to the directory of the calling file. Signature `function (err, config) {}`
+* returns - config factory.
 
 ```javascript
 'use strict';
