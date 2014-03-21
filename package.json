@@ -27,13 +27,13 @@
   "devDependencies": {
     "tape": "~2.10.2",
     "jshint": "~2.4.4",
-    "istanbul": "~0.2.6"
+    "istanbul": "~0.2.6",
+    "minimist": "0.0.8"
   },
   "dependencies": {
     "nconf": "~0.6.9",
     "caller": "0.0.1",
     "core-util-is": "~1.0.1",
-    "async": "~0.2.10",
     "shush": "0.0.1",
     "debuglog": "~1.0.1",
     "shortstop": "~1.0.0"

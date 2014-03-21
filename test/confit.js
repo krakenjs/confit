@@ -15,12 +15,12 @@ test('confit', function (t) {
 
 
     t.test('api', function (t) {
-        confit(function (err, config) {
+        var factory = confit();
+        factory.create(function (err, config) {
             t.error(err);
             t.equal(typeof config.get, 'function');
             t.equal(typeof config.set, 'function');
             t.equal(typeof config.use, 'function');
-            t.equal(typeof config.loadFile, 'function');
             t.end();
         });
     });
@@ -30,7 +30,7 @@ test('confit', function (t) {
 
         t.test('dev', function (t) {
             process.env.NODE_ENV = 'dev';
-            confit(function (err, config) {
+            confit().create(function (err, config) {
                 t.error(err);
                 t.equal(config.get('NODE_ENV'), 'dev');
                 t.equal(config.get('env:env'), 'development');
@@ -45,7 +45,7 @@ test('confit', function (t) {
 
         t.test('test', function (t) {
             process.env.NODE_ENV = 'test';
-            confit(function (err, config) {
+            confit().create(function (err, config) {
                 t.error(err);
                 t.equal(config.get('NODE_ENV'), 'test');
                 t.equal(config.get('env:env'), 'test');
@@ -60,7 +60,7 @@ test('confit', function (t) {
 
         t.test('stage', function (t) {
             process.env.NODE_ENV = 'stage';
-            confit(function (err, config) {
+            confit().create(function (err, config) {
                 t.error(err);
                 t.equal(config.get('NODE_ENV'), 'stage');
                 t.equal(config.get('env:env'), 'staging');
@@ -75,7 +75,7 @@ test('confit', function (t) {
 
         t.test('prod', function (t) {
             process.env.NODE_ENV = 'prod';
-            confit(function (err, config) {
+            confit().create(function (err, config) {
                 t.error(err);
                 t.equal(config.get('NODE_ENV'), 'prod');
                 t.equal(config.get('env:env'), 'production');
@@ -90,7 +90,7 @@ test('confit', function (t) {
 
         t.test('none', function (t) {
             process.env.NODE_ENV = 'none';
-            confit(function (err, config) {
+            confit().create(function (err, config) {
                 t.error(err);
                 t.equal(config.get('NODE_ENV'), 'none');
                 t.equal(config.get('env:env'), 'none');
@@ -106,7 +106,7 @@ test('confit', function (t) {
 
         t.test('not set', function (t) {
             process.env.NODE_ENV = '';
-            confit(function (err, config) {
+            confit().create(function (err, config) {
                 t.error(err);
                 t.equal(config.get('NODE_ENV'), '');
                 t.equal(config.get('env:env'), 'development');
@@ -121,6 +121,104 @@ test('confit', function (t) {
     });
 
 
+    t.test('get', function (t) {
+        confit().create(function (err, config) {
+            var val;
+
+            t.error(err);
+
+            val = config.get('env')
+            t.equal(typeof val, 'object');
+
+            val = config.get('env:env');
+            t.equal(typeof val, 'string');
+
+            val = config.get('env:env:length');
+            t.equal(typeof val, 'undefined');
+
+            val = config.get('env:development');
+            t.equal(typeof val, 'boolean');
+
+            val = config.get('env:a');
+            t.equal(typeof val, 'undefined');
+
+            val = config.get('a');
+            t.equal(typeof val, 'undefined');
+
+            val = config.get('a:b');
+            t.equal(typeof val, 'undefined');
+
+            val = config.get('a:b:c');
+            t.equal(typeof val, 'undefined');
+
+            val = config.get(undefined);
+            t.equal(typeof val, 'undefined');
+
+            val = config.get(null);
+            t.equal(typeof val, 'undefined');
+
+            val = config.get('');
+            t.equal(typeof val, 'undefined');
+
+            val = config.get(false);
+            t.equal(typeof val, 'undefined');
+
+            t.end();
+        });
+    });
+
+
+    t.test('set', function (t) {
+        confit().create(function (err, config) {
+            var val;
+
+            t.error(err);
+
+            val = config.set('foo', 'bar');
+            t.equal(val, 'bar');
+            t.equal(config.get('foo'), 'bar');
+
+            val = config.set('foo:bar', 'baz');
+            t.equal(val, undefined);
+            t.equal(config.get('foo:bar'), undefined);
+
+            val = config.set('new:thing', 'foo');
+            t.equal(val, 'foo');
+            t.equal(config.get('new:thing'), 'foo');
+
+            val = config.set('', 'foo');
+            t.equal(val, undefined);
+            t.equal(config.get(''), undefined);
+
+            val = config.set(undefined, undefined);
+            t.equal(val, undefined);
+
+            val = config.set('my:prop', 10);
+            t.equal(val, 10);
+            t.equal(config.get('my:prop'), 10);
+
+            val = config.set('another:obj', { with: 'prop' });
+            t.equal(val.with, 'prop');
+
+            val = config.get('another:obj');
+            t.equal(val.with, 'prop');
+
+            val = config.get('another:obj:with');
+            t.equal(val, 'prop');
+
+            t.end();
+        });
+    });
+
+
+    t.test('use', function (t) {
+        confit().create(function (err, config) {
+            t.error(err);
+            t.end();
+        });
+    });
+
+
     t.test('defaults', function (t) {
         var basedir;
 
@@ -129,7 +227,7 @@ test('confit', function (t) {
         process.env.NODE_ENV = 'test';
         basedir = path.join(__dirname, 'fixtures', 'defaults');
 
-        confit(basedir, function (err, config) {
+        confit(basedir).create(function (err, config) {
             t.error(err);
 
             // File-based overrides
@@ -143,9 +241,6 @@ test('confit', function (t) {
             config.use({ override: 'literal' });
             t.equal(config.get('override'), 'literal');
 
-            // env values should be immutable
-            config.set('env:env', 'foobar');
-            t.equal(config.get('env:env'), 'test');
             t.end();
         });
     });
@@ -157,7 +252,7 @@ test('confit', function (t) {
         process.env.NODE_ENV = 'dev';
         basedir = path.join(__dirname, 'fixtures', 'defaults');
 
-        confit(basedir, function (err, config) {
+        confit(basedir).create(function (err, config) {
             t.error(err);
 
             // File-based overrides
@@ -171,9 +266,6 @@ test('confit', function (t) {
             config.use({ override: 'literal' });
             t.equal(config.get('override'), 'literal');
 
-            // env values should be immutable
-            config.set('env:env', 'foobar');
-            t.equal(config.get('env:env'), 'development');
             t.end();
         });
 
@@ -194,7 +286,7 @@ test('confit', function (t) {
             }
         };
 
-        confit(options, function (err, config) {
+        confit(options).create(function (err, config) {
             t.error(err);
             // Ensure handler was run correctly on default file
             t.equal(config.get('misc'), path.join(basedir, 'config.json'));
@@ -221,7 +313,11 @@ test('confit', function (t) {
             }
         };
 
-        confit(options, function (err, config) {
+        t.throws(function () {
+            confit(path.join(__dirname, 'fixtures', 'malformed'));
+        });
+
+        confit(options).create(function (err, config) {
             t.ok(err);
             t.notOk(config);
             t.end();
@@ -229,85 +325,41 @@ test('confit', function (t) {
     });
 
 
-    t.test('loadFile', function (t) {
-        var basedir;
+    t.test('addOverride', function (t) {
+        var basedir, factory;
 
-        process.env.NODE_ENV = 'dev';
+        process.env.NODE_ENV = 'test';
         basedir = path.join(__dirname, 'fixtures', 'defaults');
 
-        confit(basedir, function (err, config) {
-            var file;
-
+        factory = confit(basedir);
+        factory.addOverride('development.json');
+        factory.addOverride(path.join(basedir, 'supplemental.json'));
+        factory.create(function (err, config) {
             t.error(err);
             t.ok(config);
-            t.equal(config.get('override'), 'development');
-
-            file = path.join(__dirname, 'fixtures', 'defaults', 'supplemental.json');
-            config.loadFile(file, function (err, config) {
-                t.error(err);
-                t.ok(config);
-                t.equal(config.get('default'), 'config');
-                t.equal(config.get('override'), 'supplemental');
-                t.end();
-            });
+            t.equal(config.get('default'), 'config');
+            t.equal(config.get('override'), 'supplemental');
+            t.end();
         });
     });
 
 
-    t.test('loadFile error', function (t) {
-        var options;
-
-        process.env.NODE_ENV = 'dev';
-        options = {
-            basedir: path.join(__dirname, 'fixtures', 'defaults'),
-            protocols: {
-                path: function (value) {
-                    if (value === './supplemental.json') {
-                        throw new Error('supplemental');
-                    }
-                    return value;
-                }
-            }
-        };
-
-
-        confit(options, function (err, config) {
-            var file;
-
-            t.error(err);
-            t.ok(config);
-            t.equal(config.get('override'), 'development');
-
-            file = path.join(__dirname, 'fixtures', 'defaults', 'supplemental.json');
-            config.loadFile(file, function (err, config) {
-                t.ok(err);
-                t.equal(err.message, 'supplemental');
-                t.end();
-            });
-        });
-    });
-
-
-    t.test('loadFile not found', function (t) {
+    t.test('addOverride error', function (t) {
         var basedir;
 
-        process.env.NODE_ENV = 'dev';
-        basedir = path.join(__dirname, 'fixtures', 'defaults');
 
-        confit(basedir, function (err, config) {
-            var file;
-
-            t.error(err);
-            t.ok(config);
-
-            file = path.join(__dirname, 'fixtures', 'defaults', 'notfound.json');
-            config.loadFile(file, function (err, config) {
-                t.ok(err);
-                t.equal(err.code, 'MODULE_NOT_FOUND');
-                t.notOk(config);
-                t.end();
-            });
+        t.throws(function () {
+            confit(path.join(__dirname, 'fixtures', 'defaults'))
+                .addOverride('nonexistent.json');
         });
+
+        t.throws(function () {
+            confit(path.join(__dirname, 'fixtures', 'defaults'))
+                .addOverride('malformed.json');
+        });
+
+        t.end();
     });
+
 
 });
