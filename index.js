@@ -67,7 +67,7 @@ function config(store) {
         },
 
         use: function use(obj) {
-            common.marge(obj, store);
+            common.merge(obj, store);
         }
 
     };
@@ -81,7 +81,7 @@ function builder(options) {
 
         addOverride: function addOverride(file) {
             file = common.isAbsolute(file) ? file : path.join(options.basedir, file);
-            common.marge(shush(file), this._store);
+            common.merge(shush(file), this._store);
             return this;
         },
 
@@ -91,7 +91,7 @@ function builder(options) {
             shorty = shortstop.create();
             Object.keys(options.protocols).forEach(function (protocol) {
                 shorty.use(protocol, options.protocols[protocol]);
-            }, this);
+            });
 
             shorty.resolve(this._store, function (err, data) {
                 if (err) {
@@ -118,7 +118,7 @@ function possibly(resolve, reject) {
 
 
 function resolve(file, store) {
-    return common.marge(shush(file), store);
+    return common.merge(shush(file), store);
 }
 
 
@@ -146,9 +146,9 @@ module.exports = function confit(options) {
     options.protocols = options.protocols || {};
 
     factory = builder(options);
-    common.marge(provider.argv(), factory._store);
-    common.marge(provider.env(), factory._store);
-    common.marge(provider.convenience(), factory._store);
+    common.merge(provider.argv(), factory._store);
+    common.merge(provider.env(), factory._store);
+    common.merge(provider.convenience(), factory._store);
 
     // Backdoor a couple files before we get going.
     margeFile = possibly(resolve, reject);

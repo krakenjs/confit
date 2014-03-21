@@ -197,6 +197,7 @@ test('confit', function (t) {
             t.equal(val, 10);
             t.equal(config.get('my:prop'), 10);
 
+            // Test non-primitives
             val = config.set('another:obj', { with: 'prop' });
             t.equal(val.with, 'prop');
 
@@ -206,6 +207,19 @@ test('confit', function (t) {
             val = config.get('another:obj:with');
             t.equal(val, 'prop');
 
+            // Try out arrays
+            val = config.set('arr', [0,1,2]);
+            t.ok(Array.isArray(val));
+
+            val = config.get('arr');
+            t.ok(Array.isArray(val));
+            t.equal(val[0], 0);
+            t.equal(val[1], 1);
+            t.equal(val[2], 2);
+
+            val = config.set('arr:0', 'a');
+            t.notOk(val);
+
             t.end();
         });
     });
@@ -213,7 +227,36 @@ test('confit', function (t) {
 
     t.test('use', function (t) {
         confit().create(function (err, config) {
+            var val;
+
             t.error(err);
+
+            val = config.use({ foo: { bar: 'baz' } });
+            t.notOk(val);
+
+            val = config.get('foo');
+            t.equal(typeof val, 'object');
+            t.equal(val.bar, 'baz');
+
+            val = config.get('foo:bar');
+            t.equal(val, 'baz');
+
+            config.use({ arr: [0,1,2] });
+            val = config.get('arr');
+            t.ok(Array.isArray(val));
+            t.equal(val[0], 0);
+            t.equal(val[1], 1);
+            t.equal(val[2], 2);
+
+            // Arrays are not merged
+            config.use({ arr: ['a', 'b', 'c', 'd'] });
+            val = config.get('arr');
+            t.ok(Array.isArray(val));
+            t.equal(val[0], 'a');
+            t.equal(val[1], 'b');
+            t.equal(val[2], 'c');
+            t.equal(val[3], 'd');
+
             t.end();
         });
     });
