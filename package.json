@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/totherik/confit.git"
+    "url": "git://github.com/krakenjs/confit.git"
   },
   "keywords": [
     "application",
@@ -21,9 +21,13 @@
     "config"
   ],
   "author": "Erik Toth <totherik@gmail.com>",
-  "license": "MIT",
+  "licenses": [
+    {
+      "type": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  ],
   "readmeFilename": "README.md",
-  "gitHead": "4bc76f5804f42d55cacd5cdbc3661ad1c605b3ca",
   "devDependencies": {
     "tape": "~2.10.2",
     "jshint": "~2.4.4",
