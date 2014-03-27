@@ -102,6 +102,10 @@ test('confit', function (t) {
             t.equal(val, 10);
             t.equal(config.get('my:prop'), 10);
 
+            val = config.set('thing:isEnabled', true);
+            t.strictEqual(val, true);
+            t.strictEqual(config.get('thing:isEnabled'), true);
+
             // Test non-primitives
             val = config.set('another:obj', { with: 'prop' });
             t.equal(val.with, 'prop');
