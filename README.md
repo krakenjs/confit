@@ -13,11 +13,10 @@ It will also process the loaded files using any configured
 var confit = require('confit');
 ```
 
-### confit(options, callback);
-* `options` (*String* | *Object*) - the base directory in which config files live
-or a configuration object.
-* `callback` (*Function*) - the callback to be called with the error or config object.
-Signature `function (err, config) { /* ... */}`
+### confit([options])
+* `options` (*String* | *Object*) - the base directory in which config files live or a configuration object. If no
+arguments is provided, defaults to the directory of the calling file. Signature `function (err, config) {}`
+* returns - config factory.
 
 ```javascript
 'use strict';
@@ -26,14 +25,35 @@ var path = require('path');
 var confit = require('confit');
 
 var basedir = path.join(__dirname, 'config');
-confit(basedir, function (err, config) {
+confit(basedir).create(function (err, config) {
     config.get; // Function
     config.set; // Function
     config.use; // Function
-    config.loadFile; // Function
 
     config.get('env:env'); // 'development'
 });
+```
+
+### config factory
+* `addOverride(filepath)` - Register a file (JSON or JS), the contents of which should be merged with the config datastore.
+* `create(callback)` - Creates the config object, ready for use. Callback signature: `function (err, config) {}`
+
+```javascript
+// All methods besides `create` are chainable
+confit(options)
+    .addOverride('./mysettings.json')
+    .addOverride('./mysettings.json')
+    .create(function (err, config) {
+        // ...
+    });
+
+// - or -
+//
+// var factory = confit(options);
+// factory.addOverride('./mysettings.json');
+// factory.create(function (err, config) {
+//     // ...
+// });
 ```
 
 ## Options
@@ -60,22 +80,16 @@ var options = {
     }
 };
 
-confit(options, function (err, config) {
-    config.get; // Function
-    config.set; // Function
-    config.use; // Function
-    config.loadFile; // Function
-
-    config.get('env:env'); // 'development'
+confit(options).create(function (err, config) {
+    // ...
 });
 ```
 
 
-## API
-* `get(key)` - Retrieve the value for a given key.
-* `set(key, value)` - Set a value for the given key.
+## Config API
+* `get(key)` - Retrieve the value for a given key. Colon-delimited keys can be used to traverse the object hierarchy.
+* `set(key, value)` - Set a value for the given key. Colon-delimited keys can be used to traverse the object hierarchy.
 * `use(obj)` - merge provided object into config.
-* `loadFile(filepath, callback)` - load the given file, applying and shortstop handlers, into memory.
 
 ```javascript
 config.set('foo', 'bar');
@@ -83,6 +97,9 @@ config.get('foo'); // 'bar'
 
 config.use({ foo: 'baz' });
 config.get('foo'); // 'baz'
+
+config.use({ a: { b: { c: 'd' } } } );
+config.get('a:b:c'); // 'd'
 ```
 
 ## Default Behavior

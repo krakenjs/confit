@@ -24,7 +24,7 @@
     "maxdepth": 8,
     "maxstatements": 24,
     "maxcomplexity": 12,
-    "maxlen": 80,
+    "maxlen": 120,
 
     // Relaxing Options
     "asi": false,

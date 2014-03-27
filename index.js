@@ -1,147 +1,143 @@
 'use strict';
 
 var path = require('path');
-var nconf = require('nconf');
 var shush = require('shush');
 var caller = require('caller');
 var thing = require('core-util-is');
 var shortstop = require('shortstop');
+var common = require('./lib/common');
+var provider = require('./lib/provider');
 var debug = require('debuglog')('confit');
-var env = require('./lib/env');
-var util = require('./lib/util');
 
 
-/**
- * Initializes environment convenience props in the provided nconf provider.
- * @param config an nconf Provider.
- * @returns {Object} the newly configured nconf Provider.
- */
-function environment(nodeEnv) {
-    var data = {};
-
-    debug('NODE_ENV set to \'%s\'', nodeEnv);
-
-    // Normalize env and set convenience values.
-    Object.keys(env).forEach(function (current) {
-        var match;
-
-        match = env[current].test(nodeEnv);
-        if (match) { nodeEnv = current; }
-
-        data[current] = match;
-    });
-
-    debug('env:env set to \'%s\'', nodeEnv);
-
-    // Set (or re-set) env:{nodeEnv} value in case
-    // NODE_ENV was not one of our predetermined env
-    // keys (so `config.get('env:blah')` will be true).
-    data[nodeEnv] = true;
-    data.env = nodeEnv;
-    return { env: data };
-}
-
-
-/**
- * Creates a local nconf provider instance. NO GLOBAL!
- * @returns {Object} an nconf provider
- */
-function provider() {
-    var config;
-
-    config = new nconf.Provider();
-    config.add('argv');
-    config.add('env');
-
-    // Put override before memory to ensure env
-    // values are immutable.
-    config.overrides({
-        type: 'literal',
-        store: environment(config.get('NODE_ENV') || 'development')
-    });
-
-    config.add('memory');
-
-    return config;
-}
-
-
-/**
- * Creates a file loader that uses the provided `basedir`.
- * @param basedir the root directory against which file paths will be resolved.
- * @returns {Function} the file loader implementation.
- */
-function loader(basedir) {
-
-    function abs(file) {
-        return path.resolve(file) === file;
-    }
-
-    return function load(file) {
-        var name, config;
-
-        name = path.basename(file, path.extname(file));
-        config = abs(file) ? file : path.join(basedir, file);
-
-        return {
-            name: name,
-            data: shush(config)
-        };
-    };
-
-}
-
-
-/**
- * Wraps the provided nconf Provider in a simpler convenience API.
- * @param config an nconf Provider.
- */
-function wrap(config, loadFile) {
+function config(store) {
     return {
 
         get: function get(key) {
-            return config.get(key);
+            var obj;
+
+            if (thing.isString(key) && key.length) {
+
+                key = key.split(':');
+                obj = store;
+
+                while (obj && key.length) {
+                    if (obj.constructor !== Object) {
+                        // Do not allow traversal into complex types,
+                        // such as Buffer, Date, etc. So, this type
+                        // of key will fail: 'foo:mystring:length'
+                        return undefined;
+                    }
+                    obj = obj[key.shift()];
+                }
+
+                return obj;
+
+            }
+
+            return undefined;
         },
 
         set: function set(key, value) {
-            // NOTE: There was discussion around potentially warning
-            // on attempts to set immutable values. The would require
-            // a minimum of one additional operation, which was deemed
-            // overkill for a small/unlikely scenrio. Can revisit.
-            config.set(key, value);
+            var obj, prop;
+
+            if (thing.isString(key) && key.length) {
+
+                key = key.split(':');
+                obj = store;
+
+                while (key.length - 1) {
+                    prop = key.shift();
+
+                    // Create new object for property, if nonexistent
+                    if (!obj.hasOwnProperty(prop)) {
+                        obj[prop] = {};
+                    }
+
+                    obj = obj[prop];
+                    if (obj && obj.constructor !== Object) {
+                        // Do not allow traversal into complex types,
+                        // such as Buffer, Date, etc. So, this type
+                        // of key will fail: 'foo:mystring:length'
+                        return undefined;
+                    }
+                }
+
+                return (obj[key.shift()] = value);
+            }
+
+            return undefined;
         },
 
         use: function use(obj) {
-            // Merge into memory store.
-            // This must be done b/c nconf applies things kind of backward.
-            // If we just used a literal store it would get added to the END
-            // so no values would be overridden. Additionally, only the memory
-            // store is writable at this point so all updates live there.
-            config.merge(obj);
-        },
-
-        loadFile: loadFile
+            common.merge(obj, store);
+        }
 
     };
 }
 
 
-/**
- * Main module entrypoint. Creates a confit config object using the provided
- * options.
- * @param options the configuration settings for this config instance.
- * @param callback the function to which error or config object will be passed.
- */
-module.exports = function confit(options, callback) {
-    var shorty, config, tasks, load;
+function builder(options) {
+    return {
+
+        _store: {},
+
+        addOverride: function addOverride(file) {
+            file = common.isAbsolute(file) ? file : path.join(options.basedir, file);
+            common.merge(shush(file), this._store);
+            return this;
+        },
+
+        create: function create(callback) {
+            var shorty;
+
+            shorty = shortstop.create();
+            Object.keys(options.protocols).forEach(function (protocol) {
+                shorty.use(protocol, options.protocols[protocol]);
+            });
+
+            shorty.resolve(this._store, function (err, data) {
+                if (err) {
+                    callback(err);
+                    return;
+                }
+                callback(null, config(data));
+            });
+        }
+
+    };
+}
+
+
+function possibly(resolve, reject) {
+    return function maybe() {
+        try {
+            return resolve.apply(null, arguments);
+        } catch (err) {
+            reject(err);
+        }
+    };
+}
+
+
+function resolve(file, store) {
+    return common.merge(shush(file), store);
+}
+
+
+function reject(err) {
+    if (err.code && err.code === 'MODULE_NOT_FOUND') {
+        debug('WARNING:', err.message);
+        return;
+    }
+    throw err;
+}
+
+
+module.exports = function confit(options) {
+    var factory, margeFile, file;
 
     // Normalize arguments
-    if (thing.isFunction(options)) {
-        callback = options;
-        options = undefined;
-    }
-
-    // ... still normalizing
     if (thing.isString(options)) {
         options = { basedir: options };
     }
@@ -150,97 +146,23 @@ module.exports = function confit(options, callback) {
     options = options || {};
     options.defaults = options.defaults || 'config.json';
     options.basedir = options.basedir || path.dirname(caller());
+    options.protocols = options.protocols || {};
 
+    factory = builder(options);
+    common.merge(provider.argv(), factory._store);
+    common.merge(provider.env(), factory._store);
+    common.merge(provider.convenience(), factory._store);
 
-    // Configure shortstop using provided protocols
-    shorty = shortstop.create();
-    if (thing.isObject(options.protocols)) {
-        Object.keys(options.protocols).forEach(function (protocol) {
-            shorty.use(protocol, options.protocols[protocol]);
-        });
-    }
+    // Backdoor a couple files before we get going.
+    margeFile = possibly(resolve, reject);
 
-    // Create config provider and initialize basedir
-    // TODO: Add basedir to overrides so it's readonly?
-    config = provider();
-    config.set('configdir', options.basedir);
+    // File 1: The default config file.
+    file = path.join(options.basedir, options.defaults);
+    margeFile(file, factory._store);
 
+    // File 2: The env-specific config file.
+    file = path.join(options.basedir, factory._store.env.env + '.json');
+    margeFile(file, factory._store);
 
-    tasks = [];
-    load = loader(options.basedir);
-
-
-    // Load the env-specific config file as a literal
-    // datastore. Can't use `file` b/c we preprocess it.
-    tasks.push(function (done) {
-        var file = load(config.get('env:env') + '.json');
-        shorty.resolve(file.data, function (err, data) {
-            if (err) {
-                done(err);
-                return;
-            }
-
-            config.use(file.name, {
-                type: 'literal',
-                store: data
-            });
-            done();
-        });
-    });
-
-
-    // Set defaults from `defaults` file.
-    tasks.push(function (done) {
-        var file = load(options.defaults);
-        shorty.resolve(file.data, function (err, data) {
-            if (err) {
-                done(err);
-                return;
-            }
-            config.defaults(data);
-            done();
-        });
-    });
-
-
-    util.every(tasks, function (errs) {
-
-        function failable(err) {
-            if (thing.isObject(err)) {
-                // Only report unusual errors. MODULE_NOT_FOUND is an
-                // acceptable scenario b/c no files are truly required.
-                if (err.code !== 'MODULE_NOT_FOUND') {
-                    callback(err);
-                    return true;
-                }
-                debug('WARNING:', err.message);
-            }
-            return false;
-        }
-
-        function loadFile(filepath, callback) {
-            var file;
-
-            try {
-                file = load(filepath);
-                shorty.resolve(file.data, function (err, data) {
-                    if (err) {
-                        callback(err);
-                        return;
-                    }
-                    config.use(data);
-                    callback(null, config);
-                });
-            } catch (err) {
-                callback(err);
-            }
-        }
-
-        if (!errs.some(failable)) {
-            config = wrap(config, loadFile);
-            callback(null, config);
-        }
-
-    });
-
+    return factory;
 };
