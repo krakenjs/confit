@@ -25,31 +25,6 @@ var provider = require('./lib/provider');
 var debug = require('debuglog')('confit');
 
 
-function possibly(resolve, reject) {
-    return function maybe() {
-        try {
-            return resolve.apply(null, arguments);
-        } catch (err) {
-            reject(err);
-        }
-    };
-}
-
-
-function resolve(file, store) {
-    return common.merge(shush(file), store);
-}
-
-
-function reject(err) {
-    if (err && err.code === 'MODULE_NOT_FOUND') {
-        debug('WARNING:', err.message);
-        return;
-    }
-    throw err;
-}
-
-
 function config(store) {
     return {
 
@@ -148,6 +123,31 @@ function builder(options) {
         }
 
     };
+}
+
+
+function possibly(resolve, reject) {
+    return function maybe() {
+        try {
+            return resolve.apply(null, arguments);
+        } catch (err) {
+            reject(err);
+        }
+    };
+}
+
+
+function resolve(file, store) {
+    return common.merge(shush(file), store);
+}
+
+
+function reject(err) {
+    if (err && err.code === 'MODULE_NOT_FOUND') {
+        debug('WARNING:', err.message);
+        return;
+    }
+    throw err;
 }
 
 
