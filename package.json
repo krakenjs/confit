@@ -39,6 +39,6 @@
     "core-util-is": "~1.0.1",
     "shush": "0.0.1",
     "debuglog": "~1.0.1",
-    "shortstop": "~1.0.0"
+    "shortstop": "git://github.com/pvenkatakrishnan/shortstop.git"
   }
 }

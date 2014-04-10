@@ -24,9 +24,53 @@ var common = require('./lib/common');
 var provider = require('./lib/provider');
 var debug = require('debuglog')('confit');
 
+function importFile(basedir) {
+    var obj;
+
+    basedir = basedir || process.cwd();
+    return function importFile(file) {
+        if (path.resolve(file) !== file) {
+            file = file.split('/');
+            file.unshift(basedir);
+            obj = shush(path.resolve.apply(path, file));
+        } else {
+            obj = shush(file);
+        }
+        return obj;
+    };
+}
+
+function importConfig(store) {
+
+    return function importConfig(key) {
+        var keys = key.split('.'),
+            val = store;
+        keys.every(function (entry) {
+            val = val[entry] ? val[entry] : undefined;
+            return ((val) ? true : false);
+        });
+
+        return val;
+    };
+}
+
+
+function assignConfigs(data, callback) {
+    var shorty = shortstop.create();
+    shorty.use('config', importConfig(data));
+    shorty.resolve(data, function(err, data) {
+        if (err) {
+            callback(err);
+        } else {
+            callback(null, config(data));
+        }
+    });
+}
 
 function config(store) {
     return {
+
+        _store: store,
 
         get: function get(key) {
             var obj;
@@ -84,10 +128,21 @@ function config(store) {
             return undefined;
         },
 
-        use: function use(obj) {
+        use: function use(obj, callback) {
             common.merge(obj, store);
-        }
+        },
 
+        useConfit: function useConfit(obj, callback) {
+            var self = this;
+            obj.create(function (err, data) {
+                if (err) {
+                    callback(err);
+                    return;
+                }
+                self.use(data._store);
+                callback();
+            });
+        }
     };
 }
 
@@ -104,20 +159,26 @@ function builder(options) {
         },
 
         create: function create(callback) {
-            var shorty;
+            var shorty, store = this._store;
 
             shorty = shortstop.create();
             Object.keys(options.protocols).forEach(function (protocol) {
                 shorty.use(protocol, options.protocols[protocol]);
             });
 
-            shorty.resolve(this._store, function (err, data) {
+            //add the protocol to look to include other files in
+            shorty.use('import', importFile(options.basedir));
+
+            function next(err, data) {
                 if (err) {
                     callback(err);
-                    return;
+                } else if(shorty.didResolve()) {
+                    shorty.resolve(data, next);
+                } else {
+                    assignConfigs(data, callback);
                 }
-                callback(null, config(data));
-            });
+            }
+            shorty.resolve(store, next);
         }
 
     };
