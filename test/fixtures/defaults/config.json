@@ -1,5 +1,10 @@
 {
     "default": "config",
     "override": "config",
-    "misc": "path:./config.json"
+    "misc": "path:./config.json",
+    "knock": "who-is-there",
+    "addOn": "import:./addOn.json",
+    "ding": {
+        "dong": "bell"
+    }
 }

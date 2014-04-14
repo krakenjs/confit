@@ -174,6 +174,26 @@ test('confit', function (t) {
         });
     });
 
+    t.test('useConfit', function (t) {
+        confit().create(function (err, config) {
+            t.error(err);
+
+            config.useConfit(confit(), function(err){
+                t.error(err);
+                t.end();
+            });
+        });
+    });
+
+    t.test('useConfit with invalid override', function(t) {
+        confit().create(function (err, config) {
+            config.useConfit(confit(path.join(__dirname, 'fixtures', 'invalid')), function(err) {
+                t.equal(err.code, 'MODULE_NOT_FOUND');
+                t.end();
+            });
+        });
+    });
+
 
     t.test('defaults', function (t) {
         var basedir;

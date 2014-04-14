@@ -46,25 +46,11 @@ function importConfig(store) {
         var keys = key.split('.'),
             val = store;
         keys.every(function (entry) {
-            val = val[entry] ? val[entry] : undefined;
-            return ((val) ? true : false);
+            return !!((val = val[entry]) || undefined);
         });
 
         return val;
     };
-}
-
-
-function assignConfigs(data, callback) {
-    var shorty = shortstop.create();
-    shorty.use('config', importConfig(data));
-    shorty.resolve(data, function(err, data) {
-        if (err) {
-            callback(err);
-        } else {
-            callback(null, config(data));
-        }
-    });
 }
 
 function config(store) {
@@ -128,7 +114,7 @@ function config(store) {
             return undefined;
         },
 
-        use: function use(obj, callback) {
+        use: function use(obj) {
             common.merge(obj, store);
         },
 
@@ -146,6 +132,17 @@ function config(store) {
     };
 }
 
+function assignConfigs(data, callback) {
+    var shorty = shortstop.create();
+    shorty.use('config', importConfig(data));
+    shorty.resolve(data, function(err, data) {
+        if (err) {
+            callback(err);
+        } else {
+            callback(null, config(data));
+        }
+    });
+}
 
 function builder(options) {
     return {
