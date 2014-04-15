@@ -3,6 +3,7 @@
 var path = require('path');
 var test = require('tape');
 var confit = require('../');
+var handlers = require('shortstop-handlers');
 
 
 var env = process.env.NODE_ENV;
@@ -174,21 +175,24 @@ test('confit', function (t) {
         });
     });
 
-    t.test('useConfit', function (t) {
-        confit().create(function (err, config) {
-            t.error(err);
-
-            config.useConfit(confit(), function(err){
-                t.error(err);
-                t.end();
-            });
+    t.test('import, configs handler', function(t) {
+        var basedir = path.join(__dirname, 'fixtures', 'defaults');
+        confit(basedir).create(function (err, config) {
+            t.equal(config.get('addOn:oneMore:yin'), 'yang');
+            t.equal(config.get('addOn:another'),'bell');
+            t.equal(config.get('knock'), 'who-is-there');
+            t.end();
         });
     });
 
-    t.test('useConfit with invalid override', function(t) {
-        confit().create(function (err, config) {
-            config.useConfit(confit(path.join(__dirname, 'fixtures', 'invalid')), function(err) {
-                t.equal(err.code, 'MODULE_NOT_FOUND');
+
+
+    t.test('merge', function (t) {
+        var basedir = path.join(__dirname, 'fixtures', 'defaults');
+        confit(basedir).create(function (err, configA) {
+            confit().create(function (err, configB) {
+                configA.merge(configB);
+                t.error(err);
                 t.end();
             });
         });
@@ -336,6 +340,5 @@ test('confit', function (t) {
 
         t.end();
     });
-
 
 });

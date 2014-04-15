@@ -23,35 +23,8 @@ var shortstop = require('shortstop');
 var common = require('./lib/common');
 var provider = require('./lib/provider');
 var debug = require('debuglog')('confit');
-
-function importFile(basedir) {
-    var obj;
-
-    basedir = basedir || process.cwd();
-    return function importFile(file) {
-        if (path.resolve(file) !== file) {
-            file = file.split('/');
-            file.unshift(basedir);
-            obj = shush(path.resolve.apply(path, file));
-        } else {
-            obj = shush(file);
-        }
-        return obj;
-    };
-}
-
-function importConfig(store) {
-
-    return function importConfig(key) {
-        var keys = key.split('.'),
-            val = store;
-        keys.every(function (entry) {
-            return !!((val = val[entry]) || undefined);
-        });
-
-        return val;
-    };
-}
+var handlers = require('shortstop-handlers');
+var async = require('async');
 
 function config(store) {
     return {
@@ -118,30 +91,69 @@ function config(store) {
             common.merge(obj, store);
         },
 
-        useConfit: function useConfit(obj, callback) {
-            var self = this;
-            obj.create(function (err, data) {
-                if (err) {
-                    callback(err);
-                    return;
-                }
-                self.use(data._store);
-                callback();
-            });
+        merge: function merge(obj) {
+            this.use(obj._store);
         }
     };
 }
 
-function assignConfigs(data, callback) {
-    var shorty = shortstop.create();
-    shorty.use('config', importConfig(data));
-    shorty.resolve(data, function(err, data) {
-        if (err) {
-            callback(err);
-        } else {
-            callback(null, config(data));
-        }
+function resolveImport (store, options) {
+    return function(next) {
+        var shorty = shortstop.create(),
+            pathHandler = handlers.path(options.basedir);
+        shorty.use('import', function(file, cb) {
+            return shorty.resolve(shush(pathHandler(file)), cb);
+        });
+        shorty.resolve(store, next);
+    }
+}
+
+function resolveOther (options) {
+    return function others(data, next) {
+        var shorty = shortstop.create();
+        Object.keys(options.protocols).forEach(function (protocol) {
+            shorty.use(protocol, options.protocols[protocol]);
+        });
+        shorty.resolve(data, next);
+    };
+}
+
+function resolveConfigs (data, next) {
+    var shorty = shortstop.create(),
+        usedHandler;
+
+    shorty.use('config', function(key) {
+        var keys = key.split('.'),
+            val = data;
+        usedHandler = true;
+        keys.every(function (entry) {
+            return !!((val = val[entry]) || undefined);
+        });
+        return val;
     });
+
+    async.doWhilst(
+
+        function exec(cb) {
+            usedHandler = false;
+            shorty.resolve(data, function (err, result) {
+                if (err) {
+                    cb(err);
+                    return;
+                }
+                data = result;
+                cb();
+            })
+        },
+
+        function test() {
+            return usedHandler;
+        },
+
+        function complete(err) {
+            next(null, data);
+        }
+    );
 }
 
 function builder(options) {
@@ -158,24 +170,17 @@ function builder(options) {
         create: function create(callback) {
             var shorty, store = this._store;
 
-            shorty = shortstop.create();
-            Object.keys(options.protocols).forEach(function (protocol) {
-                shorty.use(protocol, options.protocols[protocol]);
-            });
-
-            //add the protocol to look to include other files in
-            shorty.use('import', importFile(options.basedir));
-
-            function next(err, data) {
+            async.waterfall([
+                resolveImport(store, options),
+                resolveOther(options),
+                resolveConfigs
+            ], function(err, data) {
                 if (err) {
                     callback(err);
-                } else if(shorty.didResolve()) {
-                    shorty.resolve(data, next);
-                } else {
-                    assignConfigs(data, callback);
+                    return;
                 }
-            }
-            shorty.resolve(store, next);
+                callback(null, config(data));
+            });
         }
 
     };

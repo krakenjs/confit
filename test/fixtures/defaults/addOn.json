@@ -1,4 +1,6 @@
 {
     "bang": "config:knock",
-    "lookup": "config:ding.dang"
+    "lookup": "config:ding.dang",
+    "another": "config:addOn.oneMore.another2",
+    "oneMore": "import:./oneMore.json"
 }
