@@ -3,8 +3,6 @@
 var path = require('path');
 var test = require('tape');
 var confit = require('../');
-var handlers = require('shortstop-handlers');
-
 
 var env = process.env.NODE_ENV;
 
@@ -184,8 +182,6 @@ test('confit', function (t) {
             t.end();
         });
     });
-
-
 
     t.test('merge', function (t) {
         var basedir = path.join(__dirname, 'fixtures', 'defaults');

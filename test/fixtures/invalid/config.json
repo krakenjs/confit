@@ -1,4 +1,0 @@
-{
-    "foo": "config:bar.baz",
-    "yin": "import:./yang.json"
-}
