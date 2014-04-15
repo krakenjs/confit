@@ -105,7 +105,7 @@ function resolveImport (store, options) {
             return shorty.resolve(shush(pathHandler(file)), cb);
         });
         shorty.resolve(store, next);
-    }
+    };
 }
 
 function resolveOther (options) {
@@ -143,7 +143,7 @@ function resolveConfigs (data, next) {
                 }
                 data = result;
                 cb();
-            })
+            });
         },
 
         function test() {
@@ -151,6 +151,10 @@ function resolveConfigs (data, next) {
         },
 
         function complete(err) {
+            if (err) {
+                next(err);
+                return;
+            }
             next(null, data);
         }
     );
@@ -168,7 +172,7 @@ function builder(options) {
         },
 
         create: function create(callback) {
-            var shorty, store = this._store;
+            var store = this._store;
 
             async.waterfall([
                 resolveImport(store, options),
