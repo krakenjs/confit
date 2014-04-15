@@ -1,6 +1,6 @@
 {
   "name": "confit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Environment-aware configuration.",
   "main": "index.js",
   "directories": {
@@ -39,6 +39,8 @@
     "core-util-is": "~1.0.1",
     "shush": "0.0.1",
     "debuglog": "~1.0.1",
+    "shortstop-handlers": "~0.1.0",
+    "async": "~0.7.0",
     "shortstop": "~1.0.0"
   }
 }

@@ -4,7 +4,6 @@ var path = require('path');
 var test = require('tape');
 var confit = require('../');
 
-
 var env = process.env.NODE_ENV;
 
 test('confit', function (t) {
@@ -174,6 +173,27 @@ test('confit', function (t) {
         });
     });
 
+    t.test('import, configs handler', function(t) {
+        var basedir = path.join(__dirname, 'fixtures', 'defaults');
+        confit(basedir).create(function (err, config) {
+            t.equal(config.get('addOn:oneMore:yin'), 'yang');
+            t.equal(config.get('addOn:another'),'bell');
+            t.equal(config.get('knock'), 'who-is-there');
+            t.end();
+        });
+    });
+
+    t.test('merge', function (t) {
+        var basedir = path.join(__dirname, 'fixtures', 'defaults');
+        confit(basedir).create(function (err, configA) {
+            confit().create(function (err, configB) {
+                configA.merge(configB);
+                t.error(err);
+                t.end();
+            });
+        });
+    });
+
 
     t.test('defaults', function (t) {
         var basedir;
@@ -316,6 +336,5 @@ test('confit', function (t) {
 
         t.end();
     });
-
 
 });

@@ -23,10 +23,13 @@ var shortstop = require('shortstop');
 var common = require('./lib/common');
 var provider = require('./lib/provider');
 var debug = require('debuglog')('confit');
-
+var handlers = require('shortstop-handlers');
+var async = require('async');
 
 function config(store) {
     return {
+
+        _store: store,
 
         get: function get(key) {
             var obj;
@@ -86,11 +89,76 @@ function config(store) {
 
         use: function use(obj) {
             common.merge(obj, store);
-        }
+        },
 
+        merge: function merge(obj) {
+            this.use(obj._store);
+        }
     };
 }
 
+function resolveImport (store, options) {
+    return function(next) {
+        var shorty = shortstop.create(),
+            pathHandler = handlers.path(options.basedir);
+        shorty.use('import', function(file, cb) {
+            return shorty.resolve(shush(pathHandler(file)), cb);
+        });
+        shorty.resolve(store, next);
+    };
+}
+
+function resolveOther (options) {
+    return function others(data, next) {
+        var shorty = shortstop.create();
+        Object.keys(options.protocols).forEach(function (protocol) {
+            shorty.use(protocol, options.protocols[protocol]);
+        });
+        shorty.resolve(data, next);
+    };
+}
+
+function resolveConfigs (data, next) {
+    var shorty = shortstop.create(),
+        usedHandler;
+
+    shorty.use('config', function(key) {
+        var keys = key.split('.'),
+            val = data;
+        usedHandler = true;
+        keys.every(function (entry) {
+            return !!((val = val[entry]) || undefined);
+        });
+        return val;
+    });
+
+    async.doWhilst(
+
+        function exec(cb) {
+            usedHandler = false;
+            shorty.resolve(data, function (err, result) {
+                if (err) {
+                    cb(err);
+                    return;
+                }
+                data = result;
+                cb();
+            });
+        },
+
+        function test() {
+            return usedHandler;
+        },
+
+        function complete(err) {
+            if (err) {
+                next(err);
+                return;
+            }
+            next(null, data);
+        }
+    );
+}
 
 function builder(options) {
     return {
@@ -104,14 +172,13 @@ function builder(options) {
         },
 
         create: function create(callback) {
-            var shorty;
+            var store = this._store;
 
-            shorty = shortstop.create();
-            Object.keys(options.protocols).forEach(function (protocol) {
-                shorty.use(protocol, options.protocols[protocol]);
-            });
-
-            shorty.resolve(this._store, function (err, data) {
+            async.waterfall([
+                resolveImport(store, options),
+                resolveOther(options),
+                resolveConfigs
+            ], function(err, data) {
                 if (err) {
                     callback(err);
                     return;
