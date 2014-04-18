@@ -1,0 +1,15 @@
+{
+    "name": "config",
+    "foo": "config:imported.foo",
+    "bar": "config:foo",
+    "baz": "config:path.to.nested.value",
+    "path": {
+        "to": {
+            "nested": {
+                "value": "config:value"
+            }
+        }
+    },
+    "value": false,
+    "imported": "import:./child.json"
+}

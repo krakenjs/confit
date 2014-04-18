@@ -16,15 +16,16 @@
 'use strict';
 
 var path = require('path');
+var async = require('async');
 var shush = require('shush');
 var caller = require('caller');
 var thing = require('core-util-is');
 var shortstop = require('shortstop');
-var common = require('./lib/common');
-var provider = require('./lib/provider');
 var debug = require('debuglog')('confit');
 var handlers = require('shortstop-handlers');
-var async = require('async');
+var common = require('./lib/common');
+var provider = require('./lib/provider');
+
 
 function config(store) {
     return {
@@ -97,68 +98,92 @@ function config(store) {
     };
 }
 
-function resolveImport (store, options) {
-    return function(next) {
-        var shorty = shortstop.create(),
-            pathHandler = handlers.path(options.basedir);
-        shorty.use('import', function(file, cb) {
-            return shorty.resolve(shush(pathHandler(file)), cb);
-        });
-        shorty.resolve(store, next);
-    };
-}
 
-function resolveOther (options) {
-    return function others(data, next) {
-        var shorty = shortstop.create();
-        Object.keys(options.protocols).forEach(function (protocol) {
-            shorty.use(protocol, options.protocols[protocol]);
+function resolveImport(data, basedir) {
+    return function importer(next) {
+        var resolve, shorty;
+
+        resolve = handlers.path(basedir);
+        shorty = shortstop.create();
+        shorty.use('import', function (file, cb) {
+            try {
+                file = resolve(file);
+                return shorty.resolve(shush(file), cb);
+            } catch (err) {
+                cb(err);
+            }
         });
+
         shorty.resolve(data, next);
     };
 }
 
-function resolveConfigs (data, next) {
-    var shorty = shortstop.create(),
-        usedHandler;
 
-    shorty.use('config', function(key) {
-        var keys = key.split('.'),
-            val = data;
-        usedHandler = true;
-        keys.every(function (entry) {
-            return !!((val = val[entry]) || undefined);
+function resolveCustom(protocols) {
+    return function custom(data, next) {
+        var shorty;
+
+        shorty = shortstop.create();
+        Object.keys(protocols).forEach(function (protocol) {
+            shorty.use(protocol, protocols[protocol]);
         });
-        return val;
-    });
 
-    async.doWhilst(
+        shorty.resolve(data, next);
+    };
+}
 
-        function exec(cb) {
-            usedHandler = false;
-            shorty.resolve(data, function (err, result) {
+
+function resolveConfigs() {
+    return function config(data, next) {
+        var shorty, usedHandler;
+
+        shorty = shortstop.create();
+        shorty.use('config', function (key) {
+            var keys, result, prop;
+
+            usedHandler = true;
+            keys = key.split('.');
+            result = data;
+
+            while (result && keys.length) {
+                prop = keys.shift();
+                if (!result.hasOwnProperty(prop)) {
+                    throw new Error('Property not found: ' + key);
+                }
+                result = result[prop];
+            }
+
+            return keys.length ? null : result;
+        });
+
+        async.doWhilst(
+            function exec(cb) {
+                usedHandler = false;
+                shorty.resolve(data, function (err, result) {
+                    if (err) {
+                        cb(err);
+                        return;
+                    }
+                    data = result;
+                    cb();
+                });
+            },
+
+            function test() {
+                return usedHandler;
+            },
+
+            function complete(err) {
                 if (err) {
-                    cb(err);
+                    next(err);
                     return;
                 }
-                data = result;
-                cb();
-            });
-        },
-
-        function test() {
-            return usedHandler;
-        },
-
-        function complete(err) {
-            if (err) {
-                next(err);
-                return;
+                next(null, data);
             }
-            next(null, data);
-        }
-    );
+        );
+    };
 }
+
 
 function builder(options) {
     return {
@@ -172,19 +197,20 @@ function builder(options) {
         },
 
         create: function create(callback) {
-            var store = this._store;
-
-            async.waterfall([
-                resolveImport(store, options),
-                resolveOther(options),
-                resolveConfigs
-            ], function(err, data) {
-                if (err) {
-                    callback(err);
-                    return;
+            async.waterfall(
+                [
+                    resolveImport(this._store, options.basedir),
+                    resolveCustom(options.protocols),
+                    resolveConfigs()
+                ],
+                function complete(err, data) {
+                    if (err) {
+                        callback(err);
+                        return;
+                    }
+                    callback(null, config(data));
                 }
-                callback(null, config(data));
-            });
+            );
         }
 
     };
