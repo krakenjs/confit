@@ -235,25 +235,6 @@ test('confit', function (t) {
     });
 
 
-//    t.test('config error', function (t) {
-//        var basedir;
-//
-//        basedir = path.join(__dirname, 'fixtures', 'config');
-//        confit(basedir)
-//    });
-
-
-    t.skip('import, configs handler', function(t) {
-        var basedir = path.join(__dirname, 'fixtures', 'defaults');
-        confit(basedir).create(function (err, config) {
-            t.equal(config.get('addOn:oneMore:yin'), 'yang');
-            t.equal(config.get('addOn:another'),'bell');
-            t.equal(config.get('knock'), 'who-is-there');
-            t.end();
-        });
-    });
-
-
     t.test('merge', function (t) {
         var basedir;
 
