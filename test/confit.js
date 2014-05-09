@@ -173,22 +173,78 @@ test('confit', function (t) {
         });
     });
 
-    t.test('import, configs handler', function(t) {
-        var basedir = path.join(__dirname, 'fixtures', 'defaults');
+
+    t.test('import protocol', function (t) {
+        var basedir;
+
+        basedir = path.join(__dirname, 'fixtures', 'import');
         confit(basedir).create(function (err, config) {
-            t.equal(config.get('addOn:oneMore:yin'), 'yang');
-            t.equal(config.get('addOn:another'),'bell');
-            t.equal(config.get('knock'), 'who-is-there');
+            t.error(err);
+            t.equal(config.get('name'), 'parent');
+            t.equal(config.get('child:name'), 'child');
+            t.equal(config.get('child:grandchild:name'), 'grandchild');
             t.end();
         });
     });
 
+
+    t.test('missing file import', function (t) {
+        var basedir;
+
+        basedir = path.join(__dirname, 'fixtures', 'import');
+        confit(basedir)
+            .addOverride('./missing.json')
+            .create(function (err, config) {
+                t.ok(err);
+                t.notOk(config);
+                t.equal(err.code, 'MODULE_NOT_FOUND');
+                t.end();
+            });
+    });
+
+
+    t.test('config protocol', function (t) {
+        var basedir;
+
+        basedir = path.join(__dirname, 'fixtures', 'config');
+        confit(basedir).create(function (err, config) {
+            t.error(err);
+            t.ok(config);
+            t.equal(config.get('name'), 'config');
+            t.equal(config.get('foo'), config.get('imported:foo'));
+            t.equal(config.get('bar'), config.get('foo'));
+            t.strictEqual(config.get('path:to:nested:value'), config.get('value'));
+            t.strictEqual(config.get('baz'), config.get('path:to:nested:value'));
+            t.end();
+        });
+    });
+
+
+    t.test('missing config value', function (t) {
+        var basedir;
+
+        basedir = path.join(__dirname, 'fixtures', 'config');
+        confit(basedir)
+            .addOverride('./error.json')
+            .create(function (err, config) {
+                t.ok(err);
+                t.notOk(config);
+                t.ok(/^Property not found:/.test(err.message));
+                t.end();
+            });
+    });
+
+
     t.test('merge', function (t) {
-        var basedir = path.join(__dirname, 'fixtures', 'defaults');
+        var basedir;
+
+        basedir = path.join(__dirname, 'fixtures', 'defaults');
         confit(basedir).create(function (err, configA) {
             confit().create(function (err, configB) {
-                configA.merge(configB);
                 t.error(err);
+                t.doesNotThrow(function () {
+                    configA.merge(configB);
+                });
                 t.end();
             });
         });
