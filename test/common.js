@@ -58,3 +58,22 @@ test('merge', function (t) {
 
     t.end();
 });
+
+
+test('merge with existing props', function (t) {
+    var src, dest;
+
+    src = {
+        'a': {
+            'foo': false
+        }
+    };
+    dest = { 'a': '[Object object]' };
+
+    t.doesNotThrow(function () {
+        common.merge(src, dest);
+        t.deepEqual(src.a, dest.a);
+    });
+
+    t.end();
+});
