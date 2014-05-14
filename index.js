@@ -148,7 +148,7 @@ function resolveConfigs() {
             while (result && keys.length) {
                 prop = keys.shift();
                 if (!result.hasOwnProperty(prop)) {
-                    throw new Error('Property not found: ' + key);
+                    return undefined;
                 }
                 result = result[prop];
             }
