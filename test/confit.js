@@ -227,9 +227,9 @@ test('confit', function (t) {
         confit(basedir)
             .addOverride('./error.json')
             .create(function (err, config) {
-                t.ok(err);
-                t.notOk(config);
-                t.ok(/^Property not found:/.test(err.message));
+                t.error(err);
+                t.ok(config);
+                t.equal(config.get('foo'), undefined);
                 t.end();
             });
     });
