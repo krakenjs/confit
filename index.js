@@ -190,6 +190,15 @@ function builder(options) {
 
         _store: {},
 
+        addDefault: function addDefault(file) {
+            var store;
+            file = common.isAbsolute(file) ? file : path.join(options.basedir, file);
+            store = shush(file) || {};
+            common.merge(this._store, store);
+            this._store = store;
+            return this;
+        },
+
         addOverride: function addOverride(file) {
             file = common.isAbsolute(file) ? file : path.join(options.basedir, file);
             common.merge(shush(file), this._store);

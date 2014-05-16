@@ -1,6 +1,6 @@
 {
   "name": "confit",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "Environment-aware configuration.",
   "main": "index.js",
   "directories": {

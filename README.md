@@ -36,6 +36,7 @@ confit(basedir).create(function (err, config) {
 
 ### config factory
 * `addOverride(filepath)` - Register a file (JSON or JS), the contents of which should be merged with the config datastore.
+* `addDefault(filepath)` - Register a file (JSON or JS), the contents of which should be merged as defaults with the config datastore.
 * `create(callback)` - Creates the config object, ready for use. Callback signature: `function (err, config) {}`
 
 ```javascript
