@@ -186,13 +186,15 @@ function resolveConfigs() {
 
 
 function builder(options) {
+    var margeFile = possibly(resolve, reject);
+
     return {
 
         _store: {},
 
         addOverride: function addOverride(file) {
             file = common.isAbsolute(file) ? file : path.join(options.basedir, file);
-            common.merge(shush(file), this._store);
+            margeFile(file, this._store);
             return this;
         },
 
@@ -234,7 +236,7 @@ function resolve(file, store) {
 
 
 function reject(err) {
-    if (err.code && err.code === 'MODULE_NOT_FOUND') {
+    if (err && err.code === 'MODULE_NOT_FOUND') {
         debug('WARNING:', err.message);
         return;
     }

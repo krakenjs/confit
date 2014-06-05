@@ -377,17 +377,9 @@ test('confit', function (t) {
 
 
     t.test('addOverride error', function (t) {
-        var basedir;
-
-
         t.throws(function () {
-            confit(path.join(__dirname, 'fixtures', 'defaults'))
-                .addOverride('nonexistent.json');
-        });
-
-        t.throws(function () {
-            confit(path.join(__dirname, 'fixtures', 'defaults'))
-                .addOverride('malformed.json');
+            confit(path.join(__dirname, 'fixtures', 'malformed'))
+                .addOverride('config.json');
         });
 
         t.end();
