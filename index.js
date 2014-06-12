@@ -186,15 +186,27 @@ function resolveConfigs() {
 
 
 function builder(options) {
+
+    function abs (basedir, fn) {
+        return function ensureAbsolute(file) {
+            file = common.isAbsolute(file) ? file : path.join(basedir, file);
+            return fn.call(this, file);
+        };
+    }
+
     return {
 
         _store: {},
 
-        addOverride: function addOverride(file) {
-            file = common.isAbsolute(file) ? file : path.join(options.basedir, file);
-            common.merge(shush(file), this._store);
+        addDefault: abs(options.basedir, function addDefaults(file) {
+            this._store = common.merge(this._store, shush(file));
             return this;
-        },
+        }),
+
+        addOverride: abs(options.basedir, function addOverride(file) {
+            this._store = common.merge(shush(file), this._store);
+            return this;
+        }),
 
         create: function create(callback) {
             async.waterfall(

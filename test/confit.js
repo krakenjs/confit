@@ -202,6 +202,22 @@ test('confit', function (t) {
             });
     });
 
+    t.test('default file import', function (t) {
+        var basedir;
+
+        basedir = path.join(__dirname, 'fixtures', 'import');
+        confit(basedir)
+            .addDefault('./default.json')
+            .create(function (err, config) {
+                t.error(err);
+                t.equal(config.get('name'), 'parent');
+                t.equal(config.get('foo'), 'bar');
+                t.equal(config.get('child:name'), 'child');
+                t.equal(config.get('child:grandchild:name'), 'grandchild');
+                t.end();
+            });
+    });
+
 
     t.test('config protocol', function (t) {
         var basedir;
