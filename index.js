@@ -186,9 +186,16 @@ function resolveConfigs() {
 
 
 function builder(options) {
+    var store;
+
+    if (typeof options.defaults === 'object') {
+        store = options.defaults;
+    } else {
+        store = {};
+    }
     return {
 
-        _store: {},
+        _store: store,
 
         addOverride: function addOverride(file) {
             file = common.isAbsolute(file) ? file : path.join(options.basedir, file);
@@ -264,13 +271,19 @@ module.exports = function confit(options) {
     // Backdoor a couple files before we get going.
     margeFile = possibly(resolve, reject);
 
-    // File 1: The default config file.
-    file = path.join(options.basedir, options.defaults);
-    margeFile(file, factory._store);
+    //instead of reading configs from a file, we could just pass the json object itself
+    if (typeof options.defaults === 'object') {
+        if (options[factory._store.env.env]) {
+            common.merge(options[factory._store.env.env] , factory._store);
+        }
+    } else {
+        // File 1: The default config file.
+        file = path.join(options.basedir, options.defaults);
+        margeFile(file, factory._store);
 
-    // File 2: The env-specific config file.
-    file = path.join(options.basedir, factory._store.env.env + '.json');
-    margeFile(file, factory._store);
-
+        // File 2: The env-specific config file.
+        file = path.join(options.basedir, factory._store.env.env + '.json');
+        margeFile(file, factory._store);
+    }
     return factory;
 };
