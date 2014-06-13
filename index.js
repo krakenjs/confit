@@ -186,7 +186,6 @@ function resolveConfigs() {
 
 
 function builder(options) {
-    var store;
 
     return {
 
