@@ -184,23 +184,33 @@ function resolveConfigs() {
     };
 }
 
-
 function builder(options) {
 
-    return {
-
-        _store: {},
-
-        addOverride: function addOverride(thing) {
+    function wrapper(fn) {
+        return function(thing) {
             var file;
             if (typeof thing === 'string') {
                 file = common.isAbsolute(thing) ? thing : path.join(options.basedir, thing);
                 thing = shush(file);
             }
-            common.merge(thing, this._store);
-            return this;
-        },
+            return fn.call(this, thing);
+        };
+    }
 
+
+    return {
+
+        _store: {},
+
+        addDefault: wrapper(function addDefaults(obj) {
+            this._store = common.merge(this._store, obj);
+            return this;
+        }),
+
+        addOverride: wrapper(function addOverride(obj) {
+            this._store = common.merge(obj, this._store);
+            return this;
+        }),
 
         create: function create(callback) {
             async.waterfall(
@@ -221,7 +231,6 @@ function builder(options) {
 
     };
 }
-
 
 function possibly(resolve, reject) {
     return function maybe() {
