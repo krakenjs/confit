@@ -191,13 +191,16 @@ function builder(options) {
 
         _store: {},
 
-        addOverride: function addOverride(overrider) {
-            if(typeof overrider !== 'object') {
-                overrider = shush(common.isAbsolute(overrider) ? overrider : path.join(options.basedir, overrider));
+        addOverride: function addOverride(thing) {
+            var file;
+            if (typeof thing === 'string') {
+                file = common.isAbsolute(thing) ? thing : path.join(options.basedir, thing);
+                thing = shush(file);
             }
-            common.merge(overrider, this._store);
+            common.merge(thing, this._store);
             return this;
         },
+
 
         create: function create(callback) {
             async.waterfall(
