@@ -188,18 +188,15 @@ function resolveConfigs() {
 function builder(options) {
     var store;
 
-    if (typeof options.defaults === 'object') {
-        store = options.defaults;
-    } else {
-        store = {};
-    }
     return {
 
-        _store: store,
+        _store: {},
 
-        addOverride: function addOverride(file) {
-            file = common.isAbsolute(file) ? file : path.join(options.basedir, file);
-            common.merge(shush(file), this._store);
+        addOverride: function addOverride(overrider) {
+            if(typeof overrider !== 'object') {
+                overrider = shush(common.isAbsolute(overrider) ? overrider : path.join(options.basedir, overrider));
+            }
+            common.merge(overrider, this._store);
             return this;
         },
 
@@ -271,19 +268,13 @@ module.exports = function confit(options) {
     // Backdoor a couple files before we get going.
     margeFile = possibly(resolve, reject);
 
-    //instead of reading configs from a file, we could just pass the json object itself
-    if (typeof options.defaults === 'object') {
-        if (options[factory._store.env.env]) {
-            common.merge(options[factory._store.env.env] , factory._store);
-        }
-    } else {
-        // File 1: The default config file.
-        file = path.join(options.basedir, options.defaults);
-        margeFile(file, factory._store);
+    // File 1: The default config file.
+    file = path.join(options.basedir, options.defaults);
+    margeFile(file, factory._store);
 
-        // File 2: The env-specific config file.
-        file = path.join(options.basedir, factory._store.env.env + '.json');
-        margeFile(file, factory._store);
-    }
+    // File 2: The env-specific config file.
+    file = path.join(options.basedir, factory._store.env.env + '.json');
+    margeFile(file, factory._store);
+
     return factory;
 };

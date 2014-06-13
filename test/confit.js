@@ -220,28 +220,23 @@ test('confit', function (t) {
     });
 
 
-    t.test('option.defaults as json object', function (t) {
-        confit({
-            defaults: {
-                foo: 'bar',
+    t.test('confit addOverride as json object', function (t) {
+        var basedir;
+        basedir = path.join(__dirname, 'fixtures', 'config');
+        confit(basedir)
+            .addOverride({
                 tic: {
                     tac: 'toe'
                 },
-                ding: 'dong'
-            },
-            development: {
-                foo: 'baz',
-                nic: 'nack'
-            }
-        }).create(function (err, config) {
-            t.error(err);
-            t.ok(config);
-            t.equal(config.get('foo'), 'baz');
-            t.equal(config.get('tic:tac'),'toe');
-            t.equal(config.get('ding'), 'dong');
-            t.equal(config.get('nic'), 'nack');
-            t.end();
-        });
+                foo: 'bar'
+            }).create(function (err, config) {
+                t.error(err);
+                t.ok(config);
+                t.equal(config.get('tic:tac'), 'toe');
+                t.equal(config.get('foo'),'bar');
+                t.equal(config.get('name'), 'config');
+                t.end();
+            });
     });
 
 
