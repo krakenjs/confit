@@ -219,6 +219,22 @@ test('confit', function (t) {
         });
     });
 
+    t.test('default file import', function (t) {
+        var basedir;
+
+        basedir = path.join(__dirname, 'fixtures', 'import');
+        confit(basedir)
+            .addDefault('./default.json')
+            .create(function (err, config) {
+                t.error(err);
+                t.equal(config.get('name'), 'parent');
+                t.equal(config.get('foo'), 'bar');
+                t.equal(config.get('child:name'), 'child');
+                t.equal(config.get('child:grandchild:name'), 'grandchild');
+                t.end();
+            });
+    });
+
 
     t.test('missing config value', function (t) {
         var basedir;
@@ -301,6 +317,26 @@ test('confit', function (t) {
             t.end();
         });
 
+    });
+
+
+    t.test('confit addOverride as json object', function (t) {
+        var basedir;
+        basedir = path.join(__dirname, 'fixtures', 'config');
+        confit(basedir)
+            .addOverride({
+                tic: {
+                    tac: 'toe'
+                },
+                foo: 'bar'
+            }).create(function (err, config) {
+                t.error(err);
+                t.ok(config);
+                t.equal(config.get('tic:tac'), 'toe');
+                t.equal(config.get('foo'),'bar');
+                t.equal(config.get('name'), 'config');
+                t.end();
+            });
     });
 
 
