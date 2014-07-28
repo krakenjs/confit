@@ -289,3 +289,5 @@ module.exports = function confit(options) {
 
     return factory;
 };
+
+module.exports.config = config;
