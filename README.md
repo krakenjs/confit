@@ -104,11 +104,13 @@ config.get('a:b:c'); // 'd'
 ```
 
 ## Default Behavior
-By default, `confit` loads `process.env` and `argv` values upon initialization. Additionally,
-it creates convenience environment properties prefixed with `env:` based on the
-current `NODE_ENV` setting, defaulting to `development`. It also normalizes
-`NODE_ENV` settings to the long form, so `dev` becomes `development`, `prod`
-becomes `production`, etc.
+By default, `confit` loads `process.env` and `argv` values upon initialization.
+Additionally, it creates convenience environment properties prefixed with
+`env:` based on the current `NODE_ENV` setting, defaulting to `development`. It
+also normalizes `NODE_ENV` settings so values starting with `prod` become
+`production`, starting with `stag` become `staging`, starting with `test`
+become `test` and starting with `dev` become `development`.
+
 ```javascript
 // NODE_ENV='dev'
 config.get('NODE_ENV');        // 'dev'
