@@ -1,4 +1,9 @@
-# confit
+confit
+======
+
+Lead Maintainer: [Poornima Venkat](https://github.com/pvenkatakrishnan/)  
+
+[![Build Status](https://travis-ci.org/krakenjs/confit.svg?branch=master)](https://travis-ci.org/krakenjs/confit)  
 
 Simple, environment-based configuration. `confit` loads a default JSON
 configuration file, additionally loading environment-specific files, if applicable.
@@ -6,7 +11,6 @@ It will also process the loaded files using any configured
 [shortstop](https://github.com/paypal/shortstop) protocol handlers.
 (See **Options** below.)
 
-[![Build Status](https://travis-ci.org/krakenjs/confit.png)](https://travis-ci.org/krakenjs/confit)
 
 ## Usage
 ```javascript
