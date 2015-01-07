@@ -135,3 +135,24 @@ config.get('env:staging');     // false
 config.get('env:production');  // false
 config.get('env:custom');      // true
 ```
+
+Confit by default comes with 2 shortstop handlers enabled.
+
+* `import:`
+Merges the contents of the specified file into configuration under a given key.
+```json
+{
+    "foo": "import:./myjsonfile"
+}
+```
+
+* `config:`
+Replaces with the value at a given key. Note that the keys in this case are dot (.) delimited.
+```json
+{
+    "foo": {
+        "bar": true
+    },
+    "foobar": "config:foo.bar"
+}
+```

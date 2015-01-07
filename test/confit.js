@@ -339,6 +339,23 @@ test('confit', function (t) {
             });
     });
 
+    t.test('confit without files, using just json objects', function(t) {
+        confit().addDefault({
+            foo: 'bar',
+            tic: {
+                tac: 'toe'
+            },
+            blue: false
+        }).addOverride({
+            blue: true
+        }).create(function(err, config) {
+            t.equal(config.get('foo'), 'bar');
+            t.equal(config.get('tic:tac'), 'toe');
+            t.equal(config.get('blue'), true);
+            t.end();
+        });
+    });
+
 
     t.test('protocols', function (t) {
         var basedir, options;
