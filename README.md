@@ -1,4 +1,9 @@
-# confit
+confit
+======
+
+Lead Maintainer: [Poornima Venkat](https://github.com/pvenkatakrishnan/)  
+
+[![Build Status](https://travis-ci.org/krakenjs/confit.svg?branch=master)](https://travis-ci.org/krakenjs/confit)  
 
 Simple, environment-based configuration. `confit` loads a default JSON
 configuration file, additionally loading environment-specific files, if applicable.
@@ -6,7 +11,6 @@ It will also process the loaded files using any configured
 [shortstop](https://github.com/paypal/shortstop) protocol handlers.
 (See **Options** below.)
 
-[![Build Status](https://travis-ci.org/krakenjs/confit.png)](https://travis-ci.org/krakenjs/confit)
 
 ## Usage
 ```javascript
@@ -104,11 +108,13 @@ config.get('a:b:c'); // 'd'
 ```
 
 ## Default Behavior
-By default, `confit` loads `process.env` and `argv` values upon initialization. Additionally,
-it creates convenience environment properties prefixed with `env:` based on the
-current `NODE_ENV` setting, defaulting to `development`. It also normalizes
-`NODE_ENV` settings to the long form, so `dev` becomes `development`, `prod`
-becomes `production`, etc.
+By default, `confit` loads `process.env` and `argv` values upon initialization.
+Additionally, it creates convenience environment properties prefixed with
+`env:` based on the current `NODE_ENV` setting, defaulting to `development`. It
+also normalizes `NODE_ENV` settings so values starting with `prod` become
+`production`, starting with `stag` become `staging`, starting with `test`
+become `test` and starting with `dev` become `development`.
+
 ```javascript
 // NODE_ENV='dev'
 config.get('NODE_ENV');        // 'dev'
