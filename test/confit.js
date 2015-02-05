@@ -399,7 +399,6 @@ test('confit', function (t) {
         };
 
         confit(options).create(function (err, config) {
-            console.info('err', JSON.stringify(err));
             t.ok(err);
             t.notOk(config);
             t.end();
