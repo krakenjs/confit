@@ -398,11 +398,8 @@ test('confit', function (t) {
             }
         };
 
-        t.throws(function () {
-            confit(path.join(__dirname, 'fixtures', 'malformed'));
-        });
-
         confit(options).create(function (err, config) {
+            console.info('err', JSON.stringify(err));
             t.ok(err);
             t.notOk(config);
             t.end();
@@ -432,7 +429,6 @@ test('confit', function (t) {
     t.test('addOverride error', function (t) {
         var basedir;
 
-
         t.throws(function () {
             confit(path.join(__dirname, 'fixtures', 'defaults'))
                 .addOverride('nonexistent.json');
@@ -444,6 +440,35 @@ test('confit', function (t) {
         });
 
         t.end();
+    });
+
+    t.test('import: with merging objects in imported files', function(t) {
+
+        var basedir = path.join(__dirname, 'fixtures', 'import');
+        var factory = confit(basedir);
+        factory.addOverride('override.json');
+        factory.create(function(err, config) {
+            t.error(err);
+            t.ok(config);
+            t.equal(config.get('child:grandchild:secret'), 'santa');
+            t.equal(config.get('child:grandchild:name'), 'surprise');
+            t.end();
+        });
+    });
+
+    t.test('import: with merging objects in imported files', function(t) {
+
+        var basedir = path.join(__dirname, 'fixtures', 'import');
+        var factory = confit(basedir);
+        factory.addDefault('override.json');
+        factory.create(function(err, config) {
+            t.error(err);
+            t.ok(config);
+            t.equal(config.get('child:grandchild:secret'), 'santa');
+            t.equal(config.get('child:grandchild:name'), 'grandchild');
+            t.equal(config.get('child:grandchild:another'), 'claus');
+            t.end();
+        });
     });
 
 });

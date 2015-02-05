@@ -34,13 +34,14 @@
     "istanbul": "~0.2.6"
   },
   "dependencies": {
-    "minimist": "~0.0.8",
+    "async": "~0.7.0",
+    "bluebird": "^2.9.6",
     "caller": "~0.0.1",
     "core-util-is": "~1.0.1",
-    "shush": "0.0.1",
     "debuglog": "~1.0.1",
+    "minimist": "~0.0.8",
+    "shortstop": "~1.0.0",
     "shortstop-handlers": "~0.1.0",
-    "async": "~0.7.0",
-    "shortstop": "~1.0.0"
+    "shush": "0.0.1"
   }
 }

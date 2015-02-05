@@ -25,6 +25,7 @@ var debug = require('debuglog')('confit');
 var handlers = require('shortstop-handlers');
 var common = require('./lib/common');
 var provider = require('./lib/provider');
+var BB = require('bluebird');
 
 
 function config(store) {
@@ -51,7 +52,6 @@ function config(store) {
                 }
 
                 return obj;
-
             }
 
             return undefined;
@@ -119,8 +119,8 @@ function resolveImport(data, basedir) {
 }
 
 
-function resolveCustom(protocols) {
-    return function custom(data, next) {
+function resolveCustom(data, protocols) {
+    return function custom(next) {
         var shorty;
 
         shorty = shortstop.create();
@@ -184,6 +184,44 @@ function resolveConfigs() {
     };
 }
 
+function resolveImport(data, basedir, cb) {
+
+    var resolve, shorty;
+
+    resolve = handlers.path(basedir);
+    shorty = shortstop.create();
+    shorty.use('import', function (file, cb) {
+        try {
+            file = resolve(file);
+            return shorty.resolve(shush(file), cb);
+        } catch (err) {
+            cb(err);
+        }
+    });
+
+    shorty.resolve(data, cb);
+
+}
+
+function marge(data, promise, mergeToData) {
+    return new BB(function(resolve, reject) {
+        promise.then(function(store) {
+            resolveImport(data, store.baseDir, function(err, result) {
+
+                if(err) {
+                    reject(err);
+                    return;
+                }
+
+                resolve({
+                    data: mergeToData ? common.merge(store.data, result) : common.merge(result, store.data),
+                    baseDir: store.baseDir
+                });
+            });
+        });
+    });
+}
+
 function builder(options) {
 
     function wrapper(fn) {
@@ -200,58 +238,63 @@ function builder(options) {
 
     return {
 
-        _store: {},
+        _promise: new BB(function(resolve) {
+            resolve({data: {}, baseDir: options.basedir});
+        }),
 
         addDefault: wrapper(function addDefaults(obj) {
-            this._store = common.merge(this._store, obj);
+            this._promise = marge(obj, this._promise, true /*mergeToData*/);
             return this;
         }),
 
         addOverride: wrapper(function addOverride(obj) {
-            this._store = common.merge(obj, this._store);
+            this._promise = marge(obj, this._promise);
             return this;
         }),
 
         create: function create(callback) {
-            async.waterfall(
-                [
-                    resolveImport(this._store, options.basedir),
-                    resolveCustom(options.protocols),
-                    resolveConfigs()
-                ],
-                function complete(err, data) {
-                    if (err) {
-                        callback(err);
-                        return;
+            this._promise.then(function(thing) {
+                async.waterfall(
+                    [
+                        resolveCustom(thing.data, options.protocols),
+                        resolveConfigs()
+                    ],
+                    function complete(err, result) {
+                        if (err) {
+                            callback(err);
+                            return;
+                        }
+                        callback(null, config(result));
                     }
-                    callback(null, config(data));
-                }
-            );
+                );
+            }).catch(function(err) {
+                callback(err);
+            });
         }
 
     };
 }
 
 function possibly(resolve, reject) {
-    return function maybe() {
+    return function maybe(file, promise) {
         try {
             return resolve.apply(null, arguments);
         } catch (err) {
-            reject(err);
+            return reject(err, promise);
         }
     };
 }
 
 
-function resolve(file, store) {
-    return common.merge(shush(file), store);
+function resolve(file, promise) {
+    return marge(shush(file), promise);
 }
 
 
-function reject(err) {
+function reject(err, promise) {
     if (err.code && err.code === 'MODULE_NOT_FOUND') {
         debug('WARNING:', err.message);
-        return;
+        return promise;
     }
     throw err;
 }
@@ -272,20 +315,25 @@ module.exports = function confit(options) {
     options.protocols = options.protocols || {};
 
     factory = builder(options);
-    common.merge(provider.argv(), factory._store);
-    common.merge(provider.env(), factory._store);
-    common.merge(provider.convenience(), factory._store);
+    var aPromise = marge(provider.convenience(), marge(provider.env(), marge(provider.argv(), factory._promise)));
 
     // Backdoor a couple files before we get going.
     margeFile = possibly(resolve, reject);
 
     // File 1: The default config file.
     file = path.join(options.basedir, options.defaults);
-    margeFile(file, factory._store);
 
-    // File 2: The env-specific config file.
-    file = path.join(options.basedir, factory._store.env.env + '.json');
-    margeFile(file, factory._store);
+    factory._promise = new BB(function(resolve) {
+        margeFile(file, aPromise)
+            .then(function(result) {
+                // File 2: The env-specific config file.
+                file = path.join(options.basedir, result.data.env.env + '.json');
+                margeFile(file, new BB(function(res) {
+                    res(result);
+                }))
+                .then(resolve);
+            });
+    });
 
     return factory;
 };
