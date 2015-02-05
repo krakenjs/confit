@@ -229,10 +229,9 @@ function builder(options) {
             var self = this;
             self._promise = self._promise
                 .then(function(result) {
-                    return self._marger(obj, result, true /*mergeToData*/)
+                    return self._marger(obj, result, true /*merge store to data*/)
                 })
                 .catch(function(err) {
-                    console.info('came in here at addDefault', err);
                     throw err;
                 });
             return this;
