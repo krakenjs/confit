@@ -426,26 +426,27 @@ test('confit', function (t) {
     });
 
 
-    t.test('addOverride error', function (t) {
-        var basedir;
+    t.test('addOverride error with non existing filw', function (t) {
 
-        //t.throws(function () {
-            confit(path.join(__dirname, 'fixtures', 'defaults'))
-                .addOverride('nonexistent.json')
-                .create(function(err, config) {
-                    //t.end();
-                });
-        //});
+        confit(path.join(__dirname, 'fixtures', 'defaults'))
+            .addOverride('nonexistent.json')
+            .create(function(err, config) {
+                t.ok(err);
+                t.equal(err.code, 'MODULE_NOT_FOUND');
+                t.end();
+            });
+    });
 
-        //t.throws(function () {
-            confit(path.join(__dirname, 'fixtures', 'defaults'))
-                .addOverride('malformed.json')
-                .create(function(err, config) {
-                    t.end();
-                });
-        //});
+    t.test('addOverride error with malformed file', function (t) {
 
-        //t.end();
+        confit(path.join(__dirname, 'fixtures', 'defaults'))
+            .addOverride('malformed.json')
+            .create(function(err, config) {
+                t.ok(err);
+                t.equal(err.code, 'MODULE_NOT_FOUND');
+                t.end();
+            });
+
     });
 
     t.test('import: with merging objects in imported files', function(t) {

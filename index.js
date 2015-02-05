@@ -182,7 +182,7 @@ function resolveImport(data, basedir, cb) {
 }
 
 function marge(baseDir) {
-    return function marger(data, store, mergeToData) {
+    return function marger(data, store, eatErr, mergeToData) {
         var file;
 
         return new BB(function(resolve, reject) {
@@ -192,7 +192,7 @@ function marge(baseDir) {
                 try {
                     data = shush(file);
                 } catch(err) {
-                    if (err.code && err.code === 'MODULE_NOT_FOUND') {
+                    if (err.code && err.code === 'MODULE_NOT_FOUND' && eatErr) {
                         debug('WARNING:', err.message);
                         resolve(store);
                     } else {
@@ -229,10 +229,7 @@ function builder(options) {
             var self = this;
             self._promise = self._promise
                 .then(function(result) {
-                    return self._marger(obj, result, true /*merge store to data*/)
-                })
-                .catch(function(err) {
-                    throw err;
+                    return self._marger(obj, result, false, true /*merge store to data*/)
                 });
             return this;
         },
@@ -262,7 +259,6 @@ function builder(options) {
                     }
                 );
             }).catch(function(err) {
-                console.info('\n\n\n\n\ncreate... promise has error', err);
                 callback(err);
             });
         }
@@ -274,10 +270,10 @@ function resolveConfFiles(data, factory, options) {
     var file = path.join(options.basedir, options.defaults);
 
     return new BB(function(resolve) {
-        factory._marger(file, data)
+        factory._marger(file, data, true)
             .then(function(result) {
                 file = path.join(options.basedir, result.env.env + '.json');
-                factory._marger(file, result)
+                factory._marger(file, result, true)
                     .then(function(result) {
                         resolve(result);
                     })
