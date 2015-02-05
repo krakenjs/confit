@@ -173,7 +173,7 @@ test('confit', function (t) {
         });
     });
 
-/*
+
     t.test('import protocol', function (t) {
         var basedir;
 
@@ -202,7 +202,7 @@ test('confit', function (t) {
             });
     });
 
-*/
+
     t.test('config protocol', function (t) {
         var basedir;
 
