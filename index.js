@@ -182,7 +182,18 @@ function resolveImport(data, basedir, cb) {
 }
 
 function marge(baseDir) {
-    return function marger(data, store, eatErr, mergeToData) {
+    /**
+     * function marger: Used to merge the contents of data into the store
+     *  data : It is either a file name or an object
+     *      if a filename, we load the file & resolve any import shortstop handlers
+     *  store: an object
+     *  options: an object with 2 properties of use
+     *      eatErr: if while loading the file, module not found ,
+     *              eat the error and continue like nothing happened
+     *      mergeToData: Merge the store into data.
+     *                  (by default data will always get merged into store)
+     **/
+    return function marger(data, store, options) {
         var file;
 
         return new BB(function(resolve, reject) {
@@ -192,7 +203,9 @@ function marge(baseDir) {
                 try {
                     data = shush(file);
                 } catch(err) {
-                    if (err.code && err.code === 'MODULE_NOT_FOUND' && eatErr) {
+                    if (err.code &&
+                        err.code === 'MODULE_NOT_FOUND' &&
+                        (options && options.eatErr)) {
                         debug('WARNING:', err.message);
                         resolve(store);
                     } else {
@@ -206,14 +219,16 @@ function marge(baseDir) {
                         reject(err);
                         return;
                     }
-                    resolve( mergeToData ? common.merge(store, result) : common.merge(result, store));
+                    resolve( (options && options.mergeToData) ?
+                        common.merge(store, result) : common.merge(result, store));
                 });
             //the case when the data is a json object
             } else {
-                resolve( mergeToData ? common.merge(store, data) : common.merge(data, store));
+                resolve( (options && options.mergeToData) ?
+                    common.merge(store, data) : common.merge(data, store));
             }
         });
-    }
+    };
 }
 
 function builder(options) {
@@ -229,7 +244,9 @@ function builder(options) {
             var self = this;
             self._promise = self._promise
                 .then(function(result) {
-                    return self._marger(obj, result, false, true /*merge store to data*/)
+                    return self._marger(obj, result, {
+                        mergeToData: true
+                    });
                 });
             return this;
         },
@@ -270,19 +287,23 @@ function resolveConfFiles(data, factory, options) {
     var file = path.join(options.basedir, options.defaults);
 
     return new BB(function(resolve) {
-        factory._marger(file, data, true)
+        factory._marger(file, data, {
+                eatErr: true
+            })
             .then(function(result) {
                 file = path.join(options.basedir, result.env.env + '.json');
-                factory._marger(file, result, true)
+                factory._marger(file, result, {
+                        eatErr: true
+                    })
                     .then(function(result) {
                         resolve(result);
-                    })
+                    });
             });
     });
 }
 
 module.exports = function confit(options) {
-    var factory, margeFile, file;
+    var factory;
 
     // Normalize arguments
     if (thing.isString(options)) {
