@@ -4,12 +4,14 @@
   "description": "Environment-aware configuration.",
   "main": "dist/index.js",
   "directories": {
-    "test": "test"
+    "test": "test",
+    "dist": "dist"
   },
   "scripts": {
     "prepublish": "npm run compile",
     "test": "npm run compile && 6to5-node test/harness.js test/**/*-test.js",
-    "compile": "6to5 --optional selfContained --modules common --out-dir dist index.js lib/**.js"
+    "compile": "6to5 --optional selfContained --modules common --out-dir dist index.js lib/**.js",
+    "cover": "6to5-node node_modules/.bin/istanbul cover test/harness.js test/**/*-test.js"
   },
   "repository": {
     "type": "git",
