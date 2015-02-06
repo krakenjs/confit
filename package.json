@@ -2,14 +2,14 @@
   "name": "confit",
   "version": "1.2.0",
   "description": "Environment-aware configuration.",
-  "main": "index.js",
+  "main": "dist/index.js",
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "test": "tape test/*.js",
-    "cover": "istanbul cover tape -- test/*.js",
-    "lint": "jshint -c .jshintrc index.js lib/*.js"
+    "prepublish": "npm run compile",
+    "test": "npm run compile && 6to5-node test/harness.js test/**/*-test.js",
+    "compile": "6to5 --optional selfContained --modules common --out-dir dist index.js lib/**.js"
   },
   "repository": {
     "type": "git",
@@ -29,18 +29,21 @@
   ],
   "readmeFilename": "README.md",
   "devDependencies": {
-    "tape": "~2.10.2",
+    "6to5": "^3.3.12",
+    "6to5-runtime": "^3.3.12",
+    "glob": "^4.3.5",
+    "istanbul": "~0.2.6",
     "jshint": "~2.4.4",
-    "istanbul": "~0.2.6"
+    "tape": "~2.10.2"
   },
   "dependencies": {
-    "minimist": "~0.0.8",
+    "async": "~0.7.0",
     "caller": "~0.0.1",
     "core-util-is": "~1.0.1",
-    "shush": "0.0.1",
     "debuglog": "~1.0.1",
+    "minimist": "~0.0.8",
+    "shortstop": "~1.0.0",
     "shortstop-handlers": "~0.1.0",
-    "async": "~0.7.0",
-    "shortstop": "~1.0.0"
+    "shush": "0.0.1"
   }
 }
