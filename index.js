@@ -14,30 +14,10 @@
  │  limitations under the License.                                            │
  \*───────────────────────────────────────────────────────────────────────────*/
 import Path from 'path';
-import shush from 'shush';
 import caller from 'caller';
-import debuglog from 'debuglog';
 import Thing from 'core-util-is';
-import Common from './lib/common';
 import Factory from './lib/factory';
-import Provider from './lib/provider';
 
-
-const debug = debuglog('confit');
-
-function conditional(fn) {
-    return function (store) {
-        try {
-            return fn(store);
-        } catch (err) {
-            if (err.code && err.code === 'MODULE_NOT_FOUND') {
-                debug('WARNING:', err.message);
-                return store;
-            }
-            throw err;
-        }
-    }
-}
 
 export default function confit(options = {}) {
     if (Thing.isString(options)) {
@@ -49,21 +29,5 @@ export default function confit(options = {}) {
     options.basedir = options.basedir || Path.dirname(caller());
     options.protocols = options.protocols || {};
 
-
-    let factory = new Factory(options);
-
-    factory.promise = factory.promise
-        .then(store => Common.merge(Provider.argv(), store))
-        .then(store => Common.merge(Provider.env(), store))
-        .then(store => Common.merge(Provider.convenience(), store))
-        .then(conditional(store => {
-            let file = Path.join(options.basedir, options.defaults);
-            return Common.merge(shush(file), store)
-        }))
-        .then(conditional(store => {
-            let file = Path.join(options.basedir, store.env.env + '.json');
-            return Common.merge(shush(file), store);
-        }));
-
-    return factory;
+    return new Factory(options);
 }
