@@ -181,56 +181,6 @@ function resolveImport(data, basedir, cb) {
 
 }
 
-
-/**
- * function marge: Used to merge the contents of data into the store
- *  data : It is either a file name or an object
- *      if a filename, we load the file & resolve any import shortstop handlers
- *  store: an object
- *  options: an object with 3 useful properties
- *      eatErr: if while loading the file, module not found ,
- *              eat the error and continue like nothing happened
- *      mergeToData: Merge the store into data.
- *                  (by default data will always get merged into store)
- *      basedir: the directory to scan for the imported configs
- **/
-function marge(data, store, options) {
-    var file;
-
-    return new BB(function(resolve, reject) {
-        //this is the case when it is the name of a file
-        if (typeof data === 'string') {
-            file = common.isAbsolute(data) ? data : path.join(options.basedir, data);
-            try {
-                data = shush(file);
-            } catch(err) {
-                if (err.code &&
-                    err.code === 'MODULE_NOT_FOUND' &&
-                    (options && options.eatErr)) {
-                    debug('WARNING:', err.message);
-                    resolve(store);
-                } else {
-                    reject(err);
-                }
-                return;
-            }
-
-            resolveImport(data, options.basedir, function(err, result) {
-                if (err) {
-                    reject(err);
-                    return;
-                }
-                resolve( (options && options.mergeToData) ?
-                    common.merge(store, result) : common.merge(result, store));
-            });
-        //the case when the data is a json object
-        } else {
-            resolve( (options && options.mergeToData) ?
-                common.merge(store, data) : common.merge(data, store));
-        }
-    });
-}
-
 function builder(options) {
     return {
 
@@ -332,6 +282,17 @@ module.exports = function confit(options) {
     return factory;
 };
 
+
+
+/**
+ *  Marger: Used to merge the contents of data into the store
+ *  options: an object with 3 useful properties
+ *      eatErr: if while loading the file, module not found ,
+ *              eat the error and continue like nothing happened
+ *      mergeToData: Merge the store into data.
+ *                  (by default data will always get merged into store)
+ *      basedir: the directory to scan for the imported configs
+ **/
 function Marger(options) {
     this.basedir = options.basedir;
     this.eatErr = options.eatErr;
