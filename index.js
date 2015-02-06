@@ -240,21 +240,25 @@ function builder(options) {
 
         addDefault: function addDefaults(obj) {
             var self = this;
+            var marger = new Marger({
+                mergeToData: true,
+                basedir: options.basedir
+            });
             self._promise = self._promise
                 .then(function(result) {
-                    return marge(obj, result, {
-                        mergeToData: true,
-                        basedir: options.basedir
-                    });
+                    return marger.marge(obj, result);
                 });
             return this;
         },
 
         addOverride: function addOverride(obj) {
             var self = this;
+            var marger = new Marger({
+                basedir: options.basedir
+            });
             self._promise = self._promise
                 .then(function(result) {
-                    return marge(obj, result, { basedir: options.basedir});
+                    return marger.marge(obj, result);
                 });
             return this;
         },
@@ -285,20 +289,18 @@ function resolveConfFiles(data, options) {
     // File 1: The default config file.
     var file = path.join(options.basedir, options.defaults);
 
+    //ignore error if config file not found
+    var marger = new Marger({
+        eatErr: true,
+        basedir: options.basedir
+    });
+
     return new BB(function(resolve) {
-        marge(file, data, {
-                eatErr: true,
-                basedir: options.basedir
-            })
+
+        marger.marge(file, data)
             .then(function(result) {
                 file = path.join(options.basedir, result.env.env + '.json');
-                marge(file, result, {
-                        eatErr: true,
-                        basedir: options.basedir
-                    })
-                    .then(function(result) {
-                        resolve(result);
-                    });
+                marger.marge(file, result).then(resolve);
             });
     });
 }
@@ -328,4 +330,47 @@ module.exports = function confit(options) {
         });
 
     return factory;
+};
+
+function Marger(options) {
+    this.basedir = options.basedir;
+    this.eatErr = options.eatErr;
+    this.mergeToData = options.mergeToData;
+}
+
+Marger.prototype.marge = function marge(data, store) {
+    var file;
+    var self = this;
+    return new BB(function(resolve, reject) {
+        //this is the case when it is the name of a file
+        if (typeof data === 'string') {
+            file = common.isAbsolute(data) ? data : path.join(self.basedir, data);
+            try {
+                data = shush(file);
+            } catch(err) {
+                if (err.code &&
+                    err.code === 'MODULE_NOT_FOUND' &&
+                    self.eatErr) {
+                    debug('WARNING:', err.message);
+                    resolve(store);
+                } else {
+                    reject(err);
+                }
+                return;
+            }
+
+            resolveImport(data, self.basedir, function(err, result) {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve(self.mergeToData ?
+                    common.merge(store, result) : common.merge(result, store));
+            });
+            //the case when the data is a json object
+        } else {
+            resolve(self.mergeToData ?
+                common.merge(store, data) : common.merge(data, store));
+        }
+    });
 };
