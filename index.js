@@ -181,54 +181,54 @@ function resolveImport(data, basedir, cb) {
 
 }
 
-function marge(baseDir) {
-    /**
-     * function marger: Used to merge the contents of data into the store
-     *  data : It is either a file name or an object
-     *      if a filename, we load the file & resolve any import shortstop handlers
-     *  store: an object
-     *  options: an object with 2 properties of use
-     *      eatErr: if while loading the file, module not found ,
-     *              eat the error and continue like nothing happened
-     *      mergeToData: Merge the store into data.
-     *                  (by default data will always get merged into store)
-     **/
-    return function marger(data, store, options) {
-        var file;
 
-        return new BB(function(resolve, reject) {
-            //this is the case when it is the name of a file
-            if (typeof data === 'string') {
-                file = common.isAbsolute(data) ? data : path.join(baseDir, data);
-                try {
-                    data = shush(file);
-                } catch(err) {
-                    if (err.code &&
-                        err.code === 'MODULE_NOT_FOUND' &&
-                        (options && options.eatErr)) {
-                        debug('WARNING:', err.message);
-                        resolve(store);
-                    } else {
-                        reject(err);
-                    }
+/**
+ * function marge: Used to merge the contents of data into the store
+ *  data : It is either a file name or an object
+ *      if a filename, we load the file & resolve any import shortstop handlers
+ *  store: an object
+ *  options: an object with 3 useful properties
+ *      eatErr: if while loading the file, module not found ,
+ *              eat the error and continue like nothing happened
+ *      mergeToData: Merge the store into data.
+ *                  (by default data will always get merged into store)
+ *      basedir: the directory to scan for the imported configs
+ **/
+function marge(data, store, options) {
+    var file;
+
+    return new BB(function(resolve, reject) {
+        //this is the case when it is the name of a file
+        if (typeof data === 'string') {
+            file = common.isAbsolute(data) ? data : path.join(options.basedir, data);
+            try {
+                data = shush(file);
+            } catch(err) {
+                if (err.code &&
+                    err.code === 'MODULE_NOT_FOUND' &&
+                    (options && options.eatErr)) {
+                    debug('WARNING:', err.message);
+                    resolve(store);
+                } else {
+                    reject(err);
+                }
+                return;
+            }
+
+            resolveImport(data, options.basedir, function(err, result) {
+                if (err) {
+                    reject(err);
                     return;
                 }
-
-                resolveImport(data, baseDir, function(err, result) {
-                    if (err) {
-                        reject(err);
-                        return;
-                    }
-                    resolve( (options && options.mergeToData) ?
-                        common.merge(store, result) : common.merge(result, store));
-                });
-            //the case when the data is a json object
-            } else {
                 resolve( (options && options.mergeToData) ?
-                    common.merge(store, data) : common.merge(data, store));
-            }
-        });
-    };
+                    common.merge(store, result) : common.merge(result, store));
+            });
+        //the case when the data is a json object
+        } else {
+            resolve( (options && options.mergeToData) ?
+                common.merge(store, data) : common.merge(data, store));
+        }
+    });
 }
 
 function builder(options) {
@@ -238,14 +238,13 @@ function builder(options) {
             resolve({});
         }),
 
-        _marger: marge(options.basedir),
-
         addDefault: function addDefaults(obj) {
             var self = this;
             self._promise = self._promise
                 .then(function(result) {
-                    return self._marger(obj, result, {
-                        mergeToData: true
+                    return marge(obj, result, {
+                        mergeToData: true,
+                        basedir: options.basedir
                     });
                 });
             return this;
@@ -255,7 +254,7 @@ function builder(options) {
             var self = this;
             self._promise = self._promise
                 .then(function(result) {
-                    return self._marger(obj, result);
+                    return marge(obj, result, { basedir: options.basedir});
                 });
             return this;
         },
@@ -282,18 +281,20 @@ function builder(options) {
     };
 }
 
-function resolveConfFiles(data, factory, options) {
+function resolveConfFiles(data, options) {
     // File 1: The default config file.
     var file = path.join(options.basedir, options.defaults);
 
     return new BB(function(resolve) {
-        factory._marger(file, data, {
-                eatErr: true
+        marge(file, data, {
+                eatErr: true,
+                basedir: options.basedir
             })
             .then(function(result) {
                 file = path.join(options.basedir, result.env.env + '.json');
-                factory._marger(file, result, {
-                        eatErr: true
+                marge(file, result, {
+                        eatErr: true,
+                        basedir: options.basedir
                     })
                     .then(function(result) {
                         resolve(result);
@@ -323,7 +324,7 @@ module.exports = function confit(options) {
             result = common.merge(provider.argv(), result);
             result = common.merge(provider.env(), result);
             result = common.merge(provider.convenience(), result);
-            return resolveConfFiles(result, factory, options);
+            return resolveConfFiles(result, options);
         });
 
     return factory;
