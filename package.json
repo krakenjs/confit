@@ -31,7 +31,6 @@
   ],
   "readmeFilename": "README.md",
   "devDependencies": {
-    "6to5": "^3.3.12",
     "6to5-runtime": "^3.3.12",
     "glob": "^4.3.5",
     "istanbul": "^0.3.5",
@@ -39,6 +38,7 @@
     "tape": "^3.5.0"
   },
   "dependencies": {
+    "6to5": "^3.3.12",
     "async": "^0.9.0",
     "caller": "^1.0.0",
     "core-util-is": "^1.0.1",
