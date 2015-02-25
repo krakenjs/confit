@@ -425,7 +425,7 @@ test('confit', function (t) {
     });
 
 
-    t.test('addOverride error with non existing filw', function (t) {
+    t.test('addOverride error with non existing file', function (t) {
 
         confit(path.join(__dirname, 'fixtures', 'defaults'))
             .addOverride('nonexistent.json')
