@@ -452,4 +452,32 @@ test('confit', function (t) {
         t.end();
     });
 
+
+    t.test('precedence', function (t) {
+        var factory;
+        var argv = process.argv;
+        var env = process.env;
+
+        process.argv = [ 'node', __filename, '--override=argv'];
+        process.env = {
+            NODE_ENV: 'development',
+            override: 'env',
+            misc: 'env'
+        };
+
+        factory = confit(path.join(__dirname, 'fixtures', 'defaults'));
+        factory.create(function (err, config) {
+            t.error(err);
+            t.ok(config);
+            t.equal(config.get('override'), 'argv');
+            t.equal(config.get('misc'), 'env');
+            t.end();
+        });
+
+        t.on('end', function () {
+            process.argv = argv;
+            process.env = env;
+        });
+
+    });
 });
