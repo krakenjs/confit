@@ -135,6 +135,17 @@ config.get('env:staging');     // false
 config.get('env:production');  // false
 config.get('env:custom');      // true
 ```
+#### Precedence
+
+Precedence takes the following form (lower numbers overwrite higher numbers):
+
+1. command line arguments
+2. env variables
+3. environment-specific config (e.g., `development.json`)
+4. main config (`config.json`)
+5. `env` normalization (`env`, `env:development`, etc)
+
+#### Shortstop Handlers
 
 Confit by default comes with 2 shortstop handlers enabled.
 
