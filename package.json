@@ -8,10 +8,10 @@
     "dist": "dist"
   },
   "scripts": {
-    "compile": "6to5 --optional selfContained --modules common --out-dir dist index.js lib/**.js",
+    "compile": "babel --optional selfContained --modules common --out-dir dist index.js lib/**.js",
     "prepublish": "npm run compile",
-    "test": "npm run compile && 6to5-node test/harness.js test/**/*-test.js",
-    "cover": "npm run compile && 6to5-node node_modules/.bin/istanbul cover test/harness.js test/**/*-test.js"
+    "test": "npm run compile && babel-node test/harness.js test/**/*-test.js",
+    "cover": "npm run compile && babel-node node_modules/.bin/istanbul cover test/harness.js test/**/*-test.js"
   },
   "repository": {
     "type": "git",
@@ -31,15 +31,15 @@
   ],
   "readmeFilename": "README.md",
   "devDependencies": {
-    "6to5-runtime": "^3.3.12",
+    "babel-runtime": "^4.6.6",
     "glob": "^4.3.5",
     "istanbul": "^0.3.5",
     "jshint": "^2.6.0",
     "tape": "^3.5.0"
   },
   "dependencies": {
-    "6to5": "^3.3.12",
     "async": "^0.9.0",
+    "babel": "^4.6.6",
     "caller": "^1.0.0",
     "core-util-is": "^1.0.1",
     "debuglog": "^1.0.1",

@@ -452,38 +452,12 @@ test('confit', function (t) {
         t.end();
     });
 
-    t.test('addOverride error with non existing file', function (t) {
-
-        confit(path.join(__dirname, 'fixtures', 'defaults'))
-            .addOverride('nonexistent.json')
-            .create(function(err, config) {
-                t.ok(err);
-                t.equal(err.code, 'MODULE_NOT_FOUND');
-                t.end();
-            });
-    });
-
-    t.test('addOverride error with malformed file', function (t) {
-
-        confit(path.join(__dirname, 'fixtures', 'defaults'))
-            .addOverride('malformed.json')
-            .create(function(err, config) {
-                t.ok(err);
-                t.equal(err.code, 'MODULE_NOT_FOUND');
-                t.end();
-            });
-
-    });
-
     t.test('import: with merging objects in imported files', function(t) {
 
-        console.info('here 1');
         var basedir = path.join(__dirname, 'fixtures', 'import');
         var factory = confit(basedir);
-        console.info('here 2');
         factory.addDefault('override.json');
 
-        console.info('came here');
         factory.create(function(err, config) {
             t.error(err);
             t.ok(config);
@@ -492,6 +466,34 @@ test('confit', function (t) {
             t.equal(config.get('child:grandchild:another'), 'claus');
             t.end();
         });
+    });
+
+    t.test('precedence', function (t) {
+        var factory;
+        var argv = process.argv;
+        var env = process.env;
+
+        process.argv = [ 'node', __filename, '--override=argv'];
+        process.env = {
+            NODE_ENV: 'development',
+            override: 'env',
+            misc: 'env'
+        };
+
+        factory = confit(path.join(__dirname, 'fixtures', 'defaults'));
+        factory.create(function (err, config) {
+            t.error(err);
+            t.ok(config);
+            t.equal(config.get('override'), 'argv');
+            t.equal(config.get('misc'), 'env');
+            t.end();
+        });
+
+        t.on('end', function () {
+            process.argv = argv;
+            process.env = env;
+        });
+
     });
 
 });
