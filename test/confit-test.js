@@ -31,7 +31,7 @@ test('confit', function (t) {
 
             t.error(err);
 
-            val = config.get('env')
+            val = config.get('env');
             t.equal(typeof val, 'object');
 
             val = config.get('env:env');
@@ -398,13 +398,19 @@ test('confit', function (t) {
             }
         };
 
-        t.throws(function () {
-            confit(path.join(__dirname, 'fixtures', 'malformed'));
-        });
-
         confit(options).create(function (err, config) {
             t.ok(err);
             t.notOk(config);
+            t.end();
+        });
+    });
+
+
+    t.test('malformed', function (t) {
+        var basedir = path.join(__dirname, 'fixtures', 'malformed');
+        confit(basedir).create(function (err, config) {
+            t.ok(err);
+            t.notOk(config)
             t.end();
         });
     });

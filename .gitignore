@@ -7,6 +7,7 @@
 *.gz
 *.orig
 
+dist
 work
 build
 pids
