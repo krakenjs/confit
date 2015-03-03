@@ -398,10 +398,6 @@ test('confit', function (t) {
             }
         };
 
-        t.throws(function () {
-            confit(path.join(__dirname, 'fixtures', 'malformed'));
-        });
-
         confit(options).create(function (err, config) {
             t.ok(err);
             t.notOk(config);
@@ -429,21 +425,56 @@ test('confit', function (t) {
     });
 
 
-    t.test('addOverride error', function (t) {
-        var basedir;
+    t.test('addOverride error with non existing file', function (t) {
 
+        confit(path.join(__dirname, 'fixtures', 'defaults'))
+            .addOverride('nonexistent.json')
+            .create(function(err, config) {
+                t.ok(err);
+                t.equal(err.code, 'MODULE_NOT_FOUND');
+                t.end();
+            });
+    });
 
-        t.throws(function () {
-            confit(path.join(__dirname, 'fixtures', 'defaults'))
-                .addOverride('nonexistent.json');
+    t.test('addOverride error with malformed file', function (t) {
+
+        confit(path.join(__dirname, 'fixtures', 'defaults'))
+            .addOverride('malformed.json')
+            .create(function(err, config) {
+                t.ok(err);
+                t.equal(err.code, 'MODULE_NOT_FOUND');
+                t.end();
+            });
+
+    });
+
+    t.test('import: with merging objects in imported files', function(t) {
+
+        var basedir = path.join(__dirname, 'fixtures', 'import');
+        var factory = confit(basedir);
+        factory.addOverride('override.json');
+        factory.create(function(err, config) {
+            t.error(err);
+            t.ok(config);
+            t.equal(config.get('child:grandchild:secret'), 'santa');
+            t.equal(config.get('child:grandchild:name'), 'surprise');
+            t.end();
         });
+    });
 
-        t.throws(function () {
-            confit(path.join(__dirname, 'fixtures', 'defaults'))
-                .addOverride('malformed.json');
+    t.test('import: with merging objects in imported files', function(t) {
+
+        var basedir = path.join(__dirname, 'fixtures', 'import');
+        var factory = confit(basedir);
+        factory.addDefault('override.json');
+        factory.create(function(err, config) {
+            t.error(err);
+            t.ok(config);
+            t.equal(config.get('child:grandchild:secret'), 'santa');
+            t.equal(config.get('child:grandchild:name'), 'grandchild');
+            t.equal(config.get('child:grandchild:another'), 'claus');
+            t.end();
         });
-
-        t.end();
     });
 
 });

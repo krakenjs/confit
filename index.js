@@ -17,14 +17,13 @@
 
 var path = require('path');
 var async = require('async');
-var shush = require('shush');
 var caller = require('caller');
 var thing = require('core-util-is');
 var shortstop = require('shortstop');
-var debug = require('debuglog')('confit');
-var handlers = require('shortstop-handlers');
 var common = require('./lib/common');
 var provider = require('./lib/provider');
+var Marger = require('./lib/merger');
+var BB = require('bluebird');
 
 
 function config(store) {
@@ -51,7 +50,6 @@ function config(store) {
                 }
 
                 return obj;
-
             }
 
             return undefined;
@@ -98,29 +96,8 @@ function config(store) {
     };
 }
 
-
-function resolveImport(data, basedir) {
-    return function importer(next) {
-        var resolve, shorty;
-
-        resolve = handlers.path(basedir);
-        shorty = shortstop.create();
-        shorty.use('import', function (file, cb) {
-            try {
-                file = resolve(file);
-                return shorty.resolve(shush(file), cb);
-            } catch (err) {
-                cb(err);
-            }
-        });
-
-        shorty.resolve(data, next);
-    };
-}
-
-
-function resolveCustom(protocols) {
-    return function custom(data, next) {
+function resolveCustom(data, protocols) {
+    return function custom(next) {
         var shorty;
 
         shorty = shortstop.create();
@@ -184,81 +161,83 @@ function resolveConfigs() {
     };
 }
 
+
 function builder(options) {
-
-    function wrapper(fn) {
-        return function(thing) {
-            var file;
-            if (typeof thing === 'string') {
-                file = common.isAbsolute(thing) ? thing : path.join(options.basedir, thing);
-                thing = shush(file);
-            }
-            return fn.call(this, thing);
-        };
-    }
-
-
     return {
 
-        _store: {},
-
-        addDefault: wrapper(function addDefaults(obj) {
-            this._store = common.merge(this._store, obj);
-            return this;
+        _promise: new BB(function(resolve) {
+            resolve({});
         }),
 
-        addOverride: wrapper(function addOverride(obj) {
-            this._store = common.merge(obj, this._store);
+        addDefault: function addDefaults(obj) {
+            var self = this;
+            var marger = new Marger({
+                mergeToData: true,
+                basedir: options.basedir
+            });
+            self._promise = self._promise
+                .then(function(result) {
+                    return marger.marge(obj, result);
+                });
             return this;
-        }),
+        },
+
+        addOverride: function addOverride(obj) {
+            var self = this;
+            var marger = new Marger({
+                basedir: options.basedir
+            });
+            self._promise = self._promise
+                .then(function(result) {
+                    return marger.marge(obj, result);
+                });
+            return this;
+        },
 
         create: function create(callback) {
-            async.waterfall(
-                [
-                    resolveImport(this._store, options.basedir),
-                    resolveCustom(options.protocols),
-                    resolveConfigs()
-                ],
-                function complete(err, data) {
-                    if (err) {
-                        callback(err);
-                        return;
+            this._promise.then(function(data) {
+                async.waterfall(
+                    [
+                        resolveCustom(data, options.protocols),
+                        resolveConfigs()
+                    ],
+                    function complete(err, result) {
+                        if (err) {
+                            callback(err);
+                            return;
+                        }
+                        callback(null, config(result));
                     }
-                    callback(null, config(data));
-                }
-            );
-        }
-
-    };
-}
-
-function possibly(resolve, reject) {
-    return function maybe() {
-        try {
-            return resolve.apply(null, arguments);
-        } catch (err) {
-            reject(err);
+                );
+            }).catch(function(err) {
+                callback(err);
+            });
         }
     };
 }
 
+function resolveConfFiles(data, options) {
+    // File 1: The default config file.
+    var file = path.join(options.basedir, options.defaults);
 
-function resolve(file, store) {
-    return common.merge(shush(file), store);
+    //ignore error if config file not found
+    var marger = new Marger({
+        eatErr: true,
+        basedir: options.basedir
+    });
+
+    return new BB(function(resolve) {
+
+        marger.marge(file, data)
+            .then(function(result) {
+                file = path.join(options.basedir, result.env.env + '.json');
+                marger.marge(file, result).then(resolve);
+            });
+    });
 }
-
-
-function reject(err) {
-    if (err.code && err.code === 'MODULE_NOT_FOUND') {
-        debug('WARNING:', err.message);
-        return;
-    }
-    throw err;
-}
-
 
 module.exports = function confit(options) {
-    var factory, margeFile, file;
+    var factory;
 
     // Normalize arguments
     if (thing.isString(options)) {
@@ -272,20 +251,14 @@ module.exports = function confit(options) {
     options.protocols = options.protocols || {};
 
     factory = builder(options);
-    common.merge(provider.argv(), factory._store);
-    common.merge(provider.env(), factory._store);
-    common.merge(provider.convenience(), factory._store);
 
-    // Backdoor a couple files before we get going.
-    margeFile = possibly(resolve, reject);
-
-    // File 1: The default config file.
-    file = path.join(options.basedir, options.defaults);
-    margeFile(file, factory._store);
-
-    // File 2: The env-specific config file.
-    file = path.join(options.basedir, factory._store.env.env + '.json');
-    margeFile(file, factory._store);
+    factory._promise = factory._promise
+        .then(function(result) {
+            result = common.merge(provider.argv(), result);
+            result = common.merge(provider.env(), result);
+            result = common.merge(provider.convenience(), result);
+            return resolveConfFiles(result, options);
+        });
 
     return factory;
 };
