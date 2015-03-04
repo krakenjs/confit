@@ -8,7 +8,7 @@
     "dist": "dist"
   },
   "scripts": {
-    "compile": "babel --optional selfContained --modules common --out-dir dist index.js lib/**.js",
+    "compile": "babel --optional runtime --modules common --out-dir dist index.js lib/**.js",
     "prepublish": "npm run compile",
     "test": "npm run compile && babel-node test/harness.js test/**/*-test.js",
     "cover": "npm run compile && babel-node node_modules/.bin/istanbul cover test/harness.js test/**/*-test.js"
