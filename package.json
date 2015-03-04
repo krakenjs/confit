@@ -31,7 +31,7 @@
   ],
   "readmeFilename": "README.md",
   "devDependencies": {
-    "babel-runtime": "^4.6.6",
+    "babel": "^4.6.6",
     "glob": "^4.3.5",
     "istanbul": "^0.3.5",
     "jshint": "^2.6.0",
@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "async": "^0.9.0",
-    "babel": "^4.6.6",
+    "babel-runtime": "^4.6.6",
     "caller": "^1.0.0",
     "core-util-is": "^1.0.1",
     "debuglog": "^1.0.1",
