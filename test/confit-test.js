@@ -324,9 +324,9 @@ test('confit', function (t) {
 
         process.env = {
             NODE_ENV: 'development',
-            override: {
-                'nested': {
-                    'nested': true
+            nested: {
+                'foo': {
+                    'bar': true
                 }
             }
         };
@@ -335,7 +335,8 @@ test('confit', function (t) {
         factory.create(function (err, config) {
             t.error(err);
             t.ok(config);
-            t.equal(config.get('override:nested:nested'), true);
+            t.equal(config.get('nested:foo:bar'), true);
+            t.equal(config.get('nested:foo:jazz'), 'hands');
             t.end();
         });
 

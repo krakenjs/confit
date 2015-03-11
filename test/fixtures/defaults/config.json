@@ -1,5 +1,11 @@
 {
     "default": "config",
     "override": "config",
-    "misc": "path:./config.json"
+    "misc": "path:./config.json",
+    "nested": {
+      "foo": {
+        "bar": "baz",
+        "jazz": "hands"
+      }
+    }
 }
