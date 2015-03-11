@@ -318,7 +318,32 @@ test('confit', function (t) {
         });
 
     });
+    t.test('override with stringified JSON env variable', function (t) {
+        var factory;
+        var env = process.env;
 
+        process.env = {
+            NODE_ENV: 'development',
+            override: {
+                'nested': {
+                    'nested': true
+                }
+            }
+        };
+
+        factory = confit(path.join(__dirname, 'fixtures', 'defaults'));
+        factory.create(function (err, config) {
+            t.error(err);
+            t.ok(config);
+            t.equal(config.get('override:nested:nested'), true);
+            t.end();
+        });
+
+        t.on('end', function () {
+            process.env = env;
+        });
+
+    });
 
     t.test('confit addOverride as json object', function (t) {
         var basedir;
