@@ -3,7 +3,7 @@ confit
 
 Lead Maintainer: [Poornima Venkat](https://github.com/pvenkatakrishnan/)  
 
-[![Build Status](https://travis-ci.org/krakenjs/confit.svg?branch=master)](https://travis-ci.org/krakenjs/confit)  
+[![Build Status](https://travis-ci.org/krakenjs/confit.svg?branch=2.x)](https://travis-ci.org/krakenjs/confit)  
 
 Simple, environment-based configuration. `confit` loads a default JSON
 configuration file, additionally loading environment-specific files, if applicable.
