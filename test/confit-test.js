@@ -324,11 +324,11 @@ test('confit', function (t) {
 
         process.env = {
             NODE_ENV: 'development',
-            nested: {
+            nested: JSON.stringify({
                 'foo': {
                     'bar': true
                 }
-            }
+            })
         };
 
         factory = confit(path.join(__dirname, 'fixtures', 'defaults'));
@@ -336,6 +336,7 @@ test('confit', function (t) {
             t.error(err);
             t.ok(config);
             t.equal(config.get('nested:foo:bar'), true);
+            t.equal(config.get('NODE_ENV'), 'development');
             t.equal(config.get('nested:foo:jazz'), 'hands');
             t.end();
         });
@@ -346,6 +347,27 @@ test('confit', function (t) {
 
     });
 
+    t.test('override with stringified number as env variable', function (t) {
+        var factory;
+        var env = process.env;
+
+        process.env = {
+            nested: "8000"
+        };
+
+        factory = confit(path.join(__dirname, 'fixtures', 'defaults'));
+        factory.create(function (err, config) {
+            t.error(err);
+            t.ok(config);
+            t.equal(config.get('nested'), 8000);
+            t.end();
+        });
+
+        t.on('end', function () {
+            process.env = env;
+        });
+
+    });
     t.test('confit addOverride as json object', function (t) {
         var basedir;
         basedir = path.join(__dirname, 'fixtures', 'config');
