@@ -486,14 +486,10 @@ test('confit', function (t) {
             t.ok(config);
             t.equal(config.get('override'), 'argv');
             t.equal(config.get('misc'), 'env');
-            t.end();
-        });
-
-        t.on('end', function () {
             process.argv = argv;
             process.env = env;
+            t.end();
         });
-
     });
 
 });
