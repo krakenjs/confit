@@ -324,11 +324,11 @@ test('confit', function (t) {
 
         process.env = {
             NODE_ENV: 'development',
-            nested: JSON.stringify({
+            nested: {
                 'foo': {
                     'bar': true
                 }
-            })
+            }
         };
 
         factory = confit(path.join(__dirname, 'fixtures', 'defaults'));
@@ -338,35 +338,85 @@ test('confit', function (t) {
             t.equal(config.get('nested:foo:bar'), true);
             t.equal(config.get('NODE_ENV'), 'development');
             t.equal(config.get('nested:foo:jazz'), 'hands');
+            process.env = env;
             t.end();
         });
 
-        t.on('end', function () {
-            process.env = env;
-        });
+
 
     });
 
-    t.test('override with stringified number as env variable', function (t) {
+    t.test('override with string as env variable', function (t) {
         var factory;
         var env = process.env;
 
         process.env = {
-            nested: "8000"
+            override: 'foo'
         };
 
         factory = confit(path.join(__dirname, 'fixtures', 'defaults'));
         factory.create(function (err, config) {
             t.error(err);
             t.ok(config);
-            t.equal(config.get('nested'), 8000);
+            t.equal(config.get('override'), 'foo');
+            process.env = env;
             t.end();
         });
 
-        t.on('end', function () {
+
+    });
+    t.test('override with stringified number as env variable', function (t) {
+        var factory;
+        var env = process.env;
+
+        process.env = {
+            override: '8000'
+        };
+
+        factory = confit(path.join(__dirname, 'fixtures', 'defaults'));
+        factory.create(function (err, config) {
+            t.error(err);
+            t.ok(config);
+            t.equal(config.get('override'), 8000);
             process.env = env;
+            t.end();
         });
 
+
+    });
+    t.test('override with array as env variable', function (t) {
+        var factory;
+        var env = process.env;
+
+        process.env = {
+            override: [1, 2, 3]
+        };
+
+        factory = confit(path.join(__dirname, 'fixtures', 'defaults'));
+        factory.create(function (err, config) {
+            t.error(err);
+            t.ok(config);
+            t.deepEqual(config.get('override'), [1, 2, 3]);
+            process.env = env;
+            t.end();
+        });
+    });
+    t.test('override with function as env variable', function (t) {
+        var factory;
+        var env = process.env;
+
+        process.env = {
+            override: function() { return 'foo'}
+        };
+
+        factory = confit(path.join(__dirname, 'fixtures', 'defaults'));
+        factory.create(function (err, config) {
+            t.error(err);
+            t.ok(config);
+            t.deepEqual(config.get('override')(), 'foo');
+            process.env = env;
+            t.end();
+        });
     });
     t.test('confit addOverride as json object', function (t) {
         var basedir;
