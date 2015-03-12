@@ -8,8 +8,9 @@ Lead Maintainer: [Poornima Venkat](https://github.com/pvenkatakrishnan/)
 Simple, environment-based configuration. `confit` loads a default JSON
 configuration file, additionally loading environment-specific files, if applicable.
 It will also process the loaded files using any configured
-[shortstop](https://github.com/paypal/shortstop) protocol handlers.
-(See **Options** below.)
+[shortstop](https://github.com/paypal/shortstop) protocol handlers—see **Options** below.
+
+`confit` adds support for adding JavaScript-style comments in your json files as each file is processed by [shush](https://github.com/totherik/shush) before being merged into your config.
 
 
 ## Usage
