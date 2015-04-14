@@ -46,6 +46,6 @@
     "minimist": "^1.1.0",
     "shortstop": "^1.0.1",
     "shortstop-handlers": "^1.0.0",
-    "shush": "~0.0.1"
+    "shush": "^1.0.0"
   }
 }
