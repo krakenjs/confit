@@ -4,14 +4,14 @@
   "description": "Environment-aware configuration.",
   "main": "dist/index.js",
   "directories": {
-    "test": "test",
-    "dist": "dist"
+    "dist": "dist",
+    "test": "test"
   },
   "scripts": {
     "compile": "babel --optional runtime --modules common --out-dir dist index.js lib/**.js",
+    "cover": "npm run compile && babel-node node_modules/.bin/istanbul cover test/harness.js test/**/*-test.js",
     "prepublish": "npm run compile",
-    "test": "npm run compile && babel-node test/harness.js test/**/*-test.js",
-    "cover": "npm run compile && babel-node node_modules/.bin/istanbul cover test/harness.js test/**/*-test.js"
+    "test": "npm run compile && babel-node test/harness.js test/**/*-test.js"
   },
   "repository": {
     "type": "git",
@@ -19,8 +19,8 @@
   },
   "keywords": [
     "application",
-    "configuration",
-    "config"
+    "config",
+    "configuration"
   ],
   "author": "Erik Toth <totherik@gmail.com>",
   "licenses": [
