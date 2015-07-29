@@ -1,4 +1,4 @@
-var tape = require('tape');
+var tape = require('tap').test;
 var glob = require('glob');
 var Path = require('path');
 

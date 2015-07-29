@@ -1,6 +1,7 @@
 'use strict';
 
-var test = require('tape');
+require('babel/register');
+var test = require('tap').test;
 var common = require('../lib/common');
 
 

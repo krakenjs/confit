@@ -1,7 +1,7 @@
 'use strict';
 
 var path = require('path');
-var test = require('tape');
+var test = require('tap').test;
 var confit = require('../');
 
 var env = process.env.NODE_ENV;
