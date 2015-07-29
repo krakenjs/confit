@@ -197,7 +197,7 @@ test('confit', function (t) {
             .create(function (err, config) {
                 t.ok(err);
                 t.notOk(config);
-                t.equal(err.code, 'MODULE_NOT_FOUND');
+                t.equal(err.cause().code, 'ENOENT');
                 t.end();
             });
     });
