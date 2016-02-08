@@ -146,6 +146,12 @@ Precedence takes the following form (lower numbers overwrite higher numbers):
 4. main config (`config.json`)
 5. `env` normalization (`env`, `env:development`, etc)
 
+Set deep properties with command line arguments and env variables using the
+same colon-delimited syntax used by `config.get()` and `config.set()`:
+```sh
+$ node app.js --foo:bar=baz
+```
+
 #### Shortstop Handlers
 
 Confit by default comes with 2 shortstop handlers enabled.

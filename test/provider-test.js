@@ -11,7 +11,7 @@ test('env', function (t) {
         process.env = env;
     });
 
-    t.test('env variables', function () {
+    t.test('env variables', function (t) {
         var val;
 
         process.env = {
@@ -21,6 +21,18 @@ test('env', function (t) {
         val = provider.env();
         t.equal(val.foo, 'bar');
         t.end();
+    });
+
+    t.test('deep env variables', function (t) {
+      var val;
+
+      process.env = {
+        'foo:bar': 'baz'
+      };
+
+      val = provider.env();
+      t.deepEqual(val.foo, { bar: 'baz' });
+      t.end();
     });
 });
 
@@ -45,6 +57,16 @@ test('argv', function (t) {
         t.equal(val.g, null);
         t.equal(val.h, null);
         t.end();
+    });
+
+    t.test('deep arguments', function (t) {
+      var val;
+
+      process.argv = [ 'node', __filename, '--foo:bar=baz' ];
+
+      val = provider.argv();
+      t.deepEqual(val.foo, { bar: 'baz' });
+      t.end();
     });
 });
 
