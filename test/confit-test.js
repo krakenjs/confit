@@ -26,6 +26,10 @@ test('confit', function (t) {
 
 
     t.test('get', function (t) {
+        //setting process.env.env to development, should not change 'env:env'.
+        //This should be ignored and 'env:env' should solely depend on process.env.NODE_ENV
+        process.env.env = 'development';
+
         confit().create(function (err, config) {
             var val;
 
@@ -493,4 +497,3 @@ test('confit', function (t) {
     });
 
 });
-

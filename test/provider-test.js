@@ -15,11 +15,14 @@ test('env', function (t) {
         var val;
 
         process.env = {
-            foo: 'bar'
+            foo: 'bar',
+            env: 'development'
         };
 
         val = provider.env();
         t.equal(val.foo, 'bar');
+        //env() provider ignores process.env.env
+        t.equal(val.env, undefined);
         t.end();
     });
 });
