@@ -65,8 +65,9 @@ confit(options)
 ## Options
 * `basedir` (*String*) - the base directory in which config files can be found.
 * `protocols` (*Object*) - An object containing a mapping of
-[shortstop](https://github.com/paypal/shortstop) protocols to handler implementations.
-This protocols will be used to process the config data prior to registration.
+[shortstop](https://github.com/paypal/shortstop) protocols to either handler implementations or an array or handler implementations.
+These protocols will be used to process the config data prior to registration.
+If using an array of handler implementations, each handler is run in series (see [`Multiple handlers` in the shortstop README](https://github.com/krakenjs/shortstop#multiple-handlers)).
 * `defaults` (*String*) - the name of the file containing all default values.
 Defaults to `config.json`.
 
