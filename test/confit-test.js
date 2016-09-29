@@ -388,6 +388,38 @@ test('confit', function (t) {
     });
 
 
+    t.test('protocols (array)', function (t) {
+        var basedir, options;
+
+        process.env.NODE_ENV = 'dev';
+        basedir = path.join(__dirname, 'fixtures', 'defaults');
+        options = {
+            basedir: basedir,
+            protocols: {
+                path: [
+                    function (value) {
+                        return path.join(basedir, value);
+                    },
+                    function (value) {
+                        return value + '!';
+                    }
+                ]
+            }
+        };
+
+        confit(options).create(function (err, config) {
+            t.error(err);
+            // Ensure handler was run correctly on default file
+            t.equal(config.get('misc'), path.join(basedir, 'config.json!'));
+            t.equal(config.get('path'), path.join(basedir, 'development.json!'));
+
+            config.use({ path: __filename });
+            t.equal(config.get('path'), __filename);
+            t.end();
+        });
+    });
+
+
     t.test('error', function (t) {
         var basedir, options;
 
