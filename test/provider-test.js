@@ -19,7 +19,7 @@ test('env', function (t) {
             env: 'development'
         };
 
-        val = provider.env();
+        val = provider.env(['env']);
         t.equal(val.foo, 'bar');
         //env() provider ignores process.env.env
         t.equal(val.env, undefined);

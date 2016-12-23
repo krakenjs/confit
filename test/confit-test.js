@@ -527,5 +527,28 @@ test('confit', function (t) {
             t.end();
         });
     });
+    t.test('env ignore', function (t) {
+        var basedir, options;
+
+        var env = process.env = {
+            NODE_ENV: 'development',
+            fromlocal: 'config:local',
+            local: 'motion',
+            ignoreme: 'file:./path/to/mindyourbusiness'
+        };
+        basedir = path.join(__dirname, 'fixtures', 'defaults');
+        options = {
+            basedir: basedir,
+            envignore: ['ignoreme']
+        };
+
+        confit(options).create(function (err, config) {
+            t.error(err);
+            // Ensure env is read except for the desired ignored property
+            t.equal(config.get('fromlocal'), env.local);
+            t.equal(config.get('ignoreme'), undefined);
+            t.end();
+        });
+    });
 
 });
