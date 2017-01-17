@@ -70,6 +70,7 @@ These protocols will be used to process the config data prior to registration.
 If using an array of handler implementations, each handler is run in series (see [`Multiple handlers` in the shortstop README](https://github.com/krakenjs/shortstop#multiple-handlers)).
 * `defaults` (*String*) - the name of the file containing all default values.
 Defaults to `config.json`.
+* `envignore` (*Array*) - any properties found in `process.env` that should be ignored
 
 ```javascript
 'use strict';
