@@ -1,8 +1,8 @@
 'use strict';
 
-var test = require('tape');
+require('babel/register');
+var test = require('tap').test;
 var provider = require('../lib/provider');
-
 
 test('env', function (t) {
     var env = process.env;
@@ -49,6 +49,8 @@ test('argv', function (t) {
         t.equal(val.h, null);
         t.end();
     });
+
+    t.end();
 });
 
 
@@ -148,4 +150,6 @@ test('convenience', function (t) {
         t.notOk(val.env.production);
         t.end();
     });
+
+    t.end();
 });

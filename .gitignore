@@ -6,6 +6,7 @@
 *.pid
 *.gz
 *.orig
+*.swp
 
 dist
 work
@@ -19,6 +20,7 @@ html-report
 xunit.xml
 node_modules
 npm-debug.log
+.nyc_output
 
 .project
 .idea

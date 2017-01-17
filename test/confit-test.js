@@ -1,7 +1,7 @@
 'use strict';
 
 var path = require('path');
-var test = require('tape');
+var test = require('tap').test;
 var confit = require('../');
 
 var env = process.env.NODE_ENV;
@@ -201,7 +201,7 @@ test('confit', function (t) {
             .create(function (err, config) {
                 t.ok(err);
                 t.notOk(config);
-                t.equal(err.code, 'MODULE_NOT_FOUND');
+                t.equal(err.cause().code, 'ENOENT');
                 t.end();
             });
     });
@@ -446,7 +446,13 @@ test('confit', function (t) {
         var basedir = path.join(__dirname, 'fixtures', 'malformed');
         confit(basedir).create(function (err, config) {
             t.ok(err);
-            t.notOk(config)
+            t.matches(err.message, /loading jsonic file.*fixtures/);
+            t.matches(err.cause().message, /pair rule failed at: \d/);
+            t.matches(err.cause(), {
+                line: 1,
+                column: 3
+            });
+            t.notOk(config);
             t.end();
         });
     });
