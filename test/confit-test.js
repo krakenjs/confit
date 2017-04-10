@@ -557,4 +557,5 @@ test('confit', function (t) {
         });
     });
 
+    t.end();
 });

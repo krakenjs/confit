@@ -1,16 +1,16 @@
 confit
 ======
 
-Lead Maintainer: [Shaun Warman](https://github.com/shaunwarman)  
+Lead Maintainer: [Shaun Warman](https://github.com/shaunwarman)
 
-[![Build Status](https://travis-ci.org/krakenjs/confit.svg?branch=2.x)](https://travis-ci.org/krakenjs/confit)  
+[![Build Status](https://travis-ci.org/krakenjs/confit.svg?branch=2.x)](https://travis-ci.org/krakenjs/confit)
 
 Simple, environment-based configuration. `confit` loads a default JSON
 configuration file, additionally loading environment-specific files, if applicable.
 It will also process the loaded files using any configured
 [shortstop](https://github.com/paypal/shortstop) protocol handlers—see **Options** below.
 
-`confit` adds support for adding JavaScript-style comments in your json files as each file is processed by [shush](https://github.com/totherik/shush) before being merged into your config.
+`confit` adds support for adding JavaScript-style comments in your json files as each file is processed by [shush](https://github.com/krakenjs/shush) before being merged into your config.
 
 
 ## Usage
@@ -20,8 +20,8 @@ var confit = require('confit');
 
 ### confit([options])
 * `options` (*String* | *Object*) - the base directory in which config files live or a configuration object. If no
-arguments is provided, defaults to the directory of the calling file. Signature `function (err, config) {}`
-* returns - config factory.
+arguments is provided, defaults to the directory of the calling file.
+* returns - [config factory](#config-factory).
 
 ```javascript
 'use strict';
@@ -65,7 +65,7 @@ confit(options)
 ## Options
 * `basedir` (*String*) - the base directory in which config files can be found.
 * `protocols` (*Object*) - An object containing a mapping of
-[shortstop](https://github.com/paypal/shortstop) protocols to either handler implementations or an array or handler implementations.
+[shortstop](https://github.com/krakenjs/shortstop) protocols to either handler implementations or an array or handler implementations.
 These protocols will be used to process the config data prior to registration.
 If using an array of handler implementations, each handler is run in series (see [`Multiple handlers` in the shortstop README](https://github.com/krakenjs/shortstop#multiple-handlers)).
 * `defaults` (*String*) - the name of the file containing all default values.
@@ -83,8 +83,8 @@ var handlers = require('shortstop-handlers');
 var options = {
     basedir: path.join(__dirname, 'config'),
     protocols: {
-        file: handlers.file,
-        glob: handlers.glob
+        file: handlers.file(__dirname),
+        glob: handlers.glob(__dirname)
     }
 };
 

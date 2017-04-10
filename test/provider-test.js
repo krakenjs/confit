@@ -11,7 +11,7 @@ test('env', function (t) {
         process.env = env;
     });
 
-    t.test('env variables', function () {
+    t.test('env variables', function (t) {
         var val;
 
         process.env = {
@@ -25,6 +25,8 @@ test('env', function (t) {
         t.equal(val.env, undefined);
         t.end();
     });
+
+    t.end();
 });
 
 
