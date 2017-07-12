@@ -1,7 +1,4 @@
-confit
-======
-
-Lead Maintainer: [Shaun Warman](https://github.com/shaunwarman)
+# confit
 
 [![Build Status](https://travis-ci.org/krakenjs/confit.svg?branch=2.x)](https://travis-ci.org/krakenjs/confit)
 
