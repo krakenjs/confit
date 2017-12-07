@@ -43,9 +43,9 @@
     "caller": "^1.0.0",
     "core-util-is": "^1.0.1",
     "debuglog": "^1.0.1",
-    "load-jsonic-sync": "^1.0.0",
     "minimist": "^1.1.0",
     "shortstop": "^1.0.1",
-    "shortstop-handlers": "^1.0.0"
+    "shortstop-handlers": "^1.0.0",
+    "shush": "^1.0.0"
   }
 }
