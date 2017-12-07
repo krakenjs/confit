@@ -187,6 +187,7 @@ test('confit', function (t) {
             t.equal(config.get('name'), 'parent');
             t.equal(config.get('child:name'), 'child');
             t.equal(config.get('child:grandchild:name'), 'grandchild');
+            t.equal(config.get('child:grandchildJson:name'), 'grandchild');
             t.end();
         });
     });

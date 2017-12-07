@@ -1,4 +1,5 @@
 {
     "name": "child",
-    "grandchild": "import:./grandchild"
+    "grandchild": "import:./grandchild",
+    "grandchildJson": "import:./grandchild.json"
 }
