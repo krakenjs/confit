@@ -1,6 +1,8 @@
-var tape = require('tap').test;
-var glob = require('glob');
-var Path = require('path');
+'use strict';
+
+const tape = require('tap').test;
+const glob = require('glob');
+const Path = require('path');
 
 // Kick things off, but only after the module has completed loading,
 // hence the setImmediate. If the load the modules synchronously,

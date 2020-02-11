@@ -1,10 +1,10 @@
 'use strict';
 
-var path = require('path');
-var test = require('tap').test;
-var confit = require('../');
+const path = require('path');
+const test = require('tap').test;
+const confit = require('../');
 
-var env = process.env.NODE_ENV;
+const env = process.env.NODE_ENV;
 
 test('confit', function (t) {
 

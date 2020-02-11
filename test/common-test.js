@@ -1,8 +1,7 @@
 'use strict';
 
-require('babel/register');
-var test = require('tap').test;
-var common = require('../lib/common');
+const test = require('tap').test;
+const common = require('../lib/common');
 
 
 test('isAbsolute', function (t) {
@@ -75,6 +74,35 @@ test('merge with existing props', function (t) {
         common.merge(src, dest);
         t.deepEqual(src.a, dest.a);
     });
+
+    t.end();
+});
+
+test('merge special objects', function (t) {
+    const TestClass = class TestClass {};
+    const dest = {};
+    const src = {
+        'a': {
+            'foo': false
+        },
+        'b': new TestClass(),
+    };
+    src.b['bar'] = true;
+
+    t.doesNotThrow(function () {
+        common.merge(src, dest);
+    });
+    t.notEqual(src, dest);
+    t.equal(src.a, dest.a);
+    t.equal(src.b, dest.b);
+    t.equal(src.b.bar, dest.b.bar);
+
+    dest.b = new TestClass();
+    t.doesNotThrow(function () {
+        common.merge(src, dest);
+    });
+    t.equal(src.b, dest.b);
+    t.equal(src.b.bar, dest.b.bar);
 
     t.end();
 });
