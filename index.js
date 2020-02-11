@@ -13,13 +13,13 @@
  │  See the License for the specific language governing permissions and       │
  │  limitations under the License.                                            │
  \*───────────────────────────────────────────────────────────────────────────*/
-const Path = require('path');
-const caller = require('caller');
-const Thing = require('core-util-is');
-const Factory = require('./lib/factory');
+import Path from 'path';
+import caller from 'caller';
+import Thing from 'core-util-is';
+import Factory from './lib/factory';
 
 
-module.exports = function confit(options = {}) {
+export default function confit(options = {}) {
     if (Thing.isString(options)) {
         options = { basedir: options };
     }
@@ -30,4 +30,4 @@ module.exports = function confit(options = {}) {
     options.protocols = options.protocols || {};
 
     return new Factory(options);
-};
+}
