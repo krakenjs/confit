@@ -1,7 +1,8 @@
 'use strict';
 
-const test = require('tap').test;
-const provider = require('../lib/provider');
+require('babel/register');
+var test = require('tap').test;
+var provider = require('../lib/provider');
 
 test('env', function (t) {
     var env = process.env;
