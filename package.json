@@ -31,14 +31,14 @@
     "glob": "^7.1.6",
     "jshint": "^2.11.0",
     "nyc": "^15.0.0",
-    "tap": "^14.10.6"
+    "tap": "^14.10.8"
   },
   "dependencies": {
     "async": "^2.6.3",
     "caller": "^1.0.1",
     "core-util-is": "^1.0.2",
     "debuglog": "^1.0.1",
-    "minimist": "^1.2.0",
+    "minimist": "^1.2.5",
     "shortstop": "^1.0.3",
     "shortstop-handlers": "^1.0.1",
     "shush": "^1.0.0"
