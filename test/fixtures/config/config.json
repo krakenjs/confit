@@ -11,5 +11,9 @@
         }
     },
     "value": false,
+    "arr":[{
+        "name": "object1"
+    }],
+    "arr_empty":[],
     "imported": "import:./child.json"
 }

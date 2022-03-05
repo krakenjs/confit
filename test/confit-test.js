@@ -26,11 +26,13 @@ test('confit', function (t) {
 
 
     t.test('get', function (t) {
+        var basedir;
         //setting process.env.env to development, should not change 'env:env'.
         //This should be ignored and 'env:env' should solely depend on process.env.NODE_ENV
         process.env.env = 'development';
+        basedir = path.join(__dirname, 'fixtures', 'config');
 
-        confit().create(function (err, config) {
+        confit(basedir).create(function (err, config) {
             var val;
 
             t.error(err);
@@ -69,6 +71,19 @@ test('confit', function (t) {
             t.equal(typeof val, 'undefined');
 
             val = config.get(false);
+            t.equal(typeof val, 'undefined');
+
+            val = config.get('arr');
+            t.equal(typeof val, 'object');
+            t.equal(Array.isArray(val), true);
+
+            val = config.get('arr:0:name');
+            t.equal(val, 'object1');
+
+            val = config.get('arr_empty:0');
+            t.equal(typeof val, 'undefined');
+
+            val = config.get('arr_empty:0:name');
             t.equal(typeof val, 'undefined');
 
             t.end();
