@@ -21,6 +21,7 @@ xunit.xml
 node_modules
 npm-debug.log
 .nyc_output
+.tap
 
 .project
 .idea
