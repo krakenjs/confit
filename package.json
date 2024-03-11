@@ -3,6 +3,9 @@
   "version": "3.0.0",
   "description": "Environment-aware configuration.",
   "main": "index.js",
+  "engines": {
+    "node": ">=16"
+  },
   "directories": {
     "test": "test"
   },
