@@ -6,6 +6,10 @@
   "engines": {
     "node": ">=16"
   },
+  "files": [
+    "index.js",
+    "lib/"
+  ],
   "directories": {
     "test": "test"
   },
