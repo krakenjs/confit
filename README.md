@@ -9,13 +9,14 @@ It will also process the loaded files using any configured
 
 `confit` adds support for adding JavaScript-style comments in your json files as each file is processed by [shush](https://github.com/krakenjs/shush) before being merged into your config.
 
-
 ## Usage
+
 ```javascript
-var confit = require('confit');
+const confit = require('confit');
 ```
 
 ### confit([options])
+
 * `options` (*String* | *Object*) - the base directory in which config files live or a configuration object. If no
 arguments is provided, defaults to the directory of the calling file.
 * returns - [config factory](#config-factory).
@@ -23,10 +24,10 @@ arguments is provided, defaults to the directory of the calling file.
 ```javascript
 'use strict';
 
-var path = require('path');
-var confit = require('confit');
+const path = require('path');
+const confit = require('confit');
 
-var basedir = path.join(__dirname, 'config');
+const basedir = path.join(__dirname, 'config');
 confit(basedir).create(function (err, config) {
     config.get; // Function
     config.set; // Function
@@ -37,6 +38,7 @@ confit(basedir).create(function (err, config) {
 ```
 
 ### config factory
+
 * `addOverride(filepath)` (or) `addOverride(obj)` - Use this to add file (.json or .js), to merge with the config datastore and override the overlapping data if any. Alternatively, you can also pass a json object to override.
 * `addDefault(filepath)` (or) `addDefault(obj)` - Use this to add default file (.json or .js), to merge with the config datastore and serve as the default datastore. Alternatively, you can also pass a json object for defaults.
 * `create(callback)` - Creates the config object, ready for use. Callback signature: `function (err, config) {}`
@@ -52,7 +54,7 @@ confit(options)
 
 // - or -
 //
-// var factory = confit(options);
+// const factory = confit(options);
 // factory.addOverride('./mysettings.json');
 // factory.create(function (err, config) {
 //     // ...
@@ -60,6 +62,7 @@ confit(options)
 ```
 
 ## Options
+
 * `basedir` (*String*) - the base directory in which config files can be found.
 * `protocols` (*Object*) - An object containing a mapping of
 [shortstop](https://github.com/krakenjs/shortstop) protocols to either handler implementations or an array or handler implementations.
@@ -72,12 +75,12 @@ Defaults to `config.json`.
 ```javascript
 'use strict';
 
-var path = require('path');
-var confit = require('confit');
-var handlers = require('shortstop-handlers');
+const path = require('path');
+const confit = require('confit');
+const handlers = require('shortstop-handlers');
 
 
-var options = {
+const options = {
     basedir: path.join(__dirname, 'config'),
     protocols: {
         file: handlers.file(__dirname),
@@ -90,8 +93,8 @@ confit(options).create(function (err, config) {
 });
 ```
 
-
 ## Config API
+
 * `get(key)` - Retrieve the value for a given key. Colon-delimited keys can be used to traverse the object hierarchy.
 * `set(key, value)` - Set a value for the given key. Colon-delimited keys can be used to traverse the object hierarchy.
 * `use(obj)` - merge provided object into config.
@@ -108,6 +111,7 @@ config.get('a:b:c'); // 'd'
 ```
 
 ## Default Behavior
+
 By default, `confit` loads `process.env` and `argv` values upon initialization.
 Additionally, it creates convenience environment properties prefixed with
 `env:` based on the current `NODE_ENV` setting, defaulting to `development`. It
@@ -135,6 +139,7 @@ config.get('env:staging');     // false
 config.get('env:production');  // false
 config.get('env:custom');      // true
 ```
+
 #### Precedence
 
 Precedence takes the following form (lower numbers overwrite higher numbers):
@@ -151,6 +156,7 @@ Confit by default comes with 2 shortstop handlers enabled.
 
 * `import:`
 Merges the contents of the specified file into configuration under a given key.
+
 ```json
 {
     "foo": "import:./myjsonfile"
@@ -159,6 +165,7 @@ Merges the contents of the specified file into configuration under a given key.
 
 * `config:`
 Replaces with the value at a given key. Note that the keys in this case are dot (.) delimited.
+
 ```json
 {
     "foo": {

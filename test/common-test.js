@@ -21,7 +21,8 @@ test('isAbsolute', function (t) {
 
 
 test('merge', function (t) {
-    var src, dest;
+    let src;
+    let dest;
 
     src = { a: 'a' };
     dest = {};
@@ -61,7 +62,8 @@ test('merge', function (t) {
 
 
 test('merge with existing props', function (t) {
-    var src, dest;
+    let src;
+    let dest;
 
     src = {
         'a': {
