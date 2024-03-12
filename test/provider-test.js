@@ -4,14 +4,14 @@ const test = require('tap').test;
 const provider = require('../lib/provider');
 
 test('env', function (t) {
-    var env = process.env;
+    const env = process.env;
 
     t.on('end', function () {
         process.env = env;
     });
 
     t.test('env variables', function (t) {
-        var val;
+        let val;
 
         process.env = {
             foo: 'bar',
@@ -30,14 +30,14 @@ test('env', function (t) {
 
 
 test('argv', function (t) {
-    var argv = process.argv;
+    const argv = process.argv;
 
     t.on('end', function () {
         process.argv = argv;
     });
 
     t.test('arguments', function (t) {
-        var val;
+        let val;
 
         process.argv = [ 'node', __filename, '-a', 'b', '-c', 'd', '--e=f', 'g', 'h' ];
 
@@ -56,14 +56,14 @@ test('argv', function (t) {
 
 
 test('convenience', function (t) {
-    var env = process.env.NODE_ENV;
+    const env = process.env.NODE_ENV;
 
     t.on('end', function () {
         process.env.NODE_ENV = env;
     });
 
     t.test('dev', function (t) {
-        var val;
+        let val;
 
         process.env.NODE_ENV = 'dev';
 
@@ -78,7 +78,7 @@ test('convenience', function (t) {
 
 
     t.test('test', function (t) {
-            var val;
+        let val;
 
         process.env.NODE_ENV = 'test';
 
@@ -93,7 +93,7 @@ test('convenience', function (t) {
 
 
     t.test('stage', function (t) {
-        var val;
+        let val;
 
         process.env.NODE_ENV = 'stage';
 
@@ -108,7 +108,7 @@ test('convenience', function (t) {
 
 
     t.test('prod', function (t) {
-        var val;
+        let val;
 
         process.env.NODE_ENV = 'prod';
 
@@ -123,7 +123,7 @@ test('convenience', function (t) {
 
 
     t.test('none', function (t) {
-        var val;
+        let val;
 
         process.env.NODE_ENV = 'none';
 
@@ -139,7 +139,7 @@ test('convenience', function (t) {
 
 
     t.test('not set', function (t) {
-        var val;
+        let val;
 
         process.env.NODE_ENV = '';
 

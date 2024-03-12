@@ -14,7 +14,7 @@ test('confit', function (t) {
 
 
     t.test('api', function (t) {
-        var factory = confit();
+        const factory = confit();
         factory.create(function (err, config) {
             t.error(err);
             t.equal(typeof config.get, 'function');
@@ -31,7 +31,7 @@ test('confit', function (t) {
         process.env.env = 'development';
 
         confit().create(function (err, config) {
-            var val;
+            let val;
 
             t.error(err);
 
@@ -78,7 +78,7 @@ test('confit', function (t) {
 
     t.test('set', function (t) {
         confit().create(function (err, config) {
-            var val;
+            let val;
 
             t.error(err);
 
@@ -143,7 +143,7 @@ test('confit', function (t) {
 
     t.test('use', function (t) {
         confit().create(function (err, config) {
-            var val;
+            let val;
 
             t.error(err);
 
@@ -179,7 +179,7 @@ test('confit', function (t) {
 
 
     t.test('import protocol', function (t) {
-        var basedir;
+        let basedir;
 
         basedir = path.join(__dirname, 'fixtures', 'import');
         confit(basedir).create(function (err, config) {
@@ -194,7 +194,7 @@ test('confit', function (t) {
 
 
     t.test('missing file import', function (t) {
-        var basedir;
+        let basedir;
 
         basedir = path.join(__dirname, 'fixtures', 'import');
         confit(basedir)
@@ -209,7 +209,7 @@ test('confit', function (t) {
 
 
     t.test('config protocol', function (t) {
-        var basedir;
+        let basedir;
 
         basedir = path.join(__dirname, 'fixtures', 'config');
         confit(basedir).create(function (err, config) {
@@ -225,7 +225,7 @@ test('confit', function (t) {
     });
 
     t.test('default file import', function (t) {
-        var basedir;
+        let basedir;
 
         basedir = path.join(__dirname, 'fixtures', 'import');
         confit(basedir)
@@ -242,7 +242,7 @@ test('confit', function (t) {
 
 
     t.test('missing config value', function (t) {
-        var basedir;
+        let basedir;
 
         basedir = path.join(__dirname, 'fixtures', 'config');
         confit(basedir)
@@ -257,7 +257,7 @@ test('confit', function (t) {
 
 
     t.test('merge', function (t) {
-        var basedir;
+        let basedir;
 
         basedir = path.join(__dirname, 'fixtures', 'defaults');
         confit(basedir).create(function (err, configA) {
@@ -273,7 +273,7 @@ test('confit', function (t) {
 
 
     t.test('defaults', function (t) {
-        var basedir;
+        let basedir;
 
         // This case should still load the default values
         // even though a 'test.json' file does not exist.
@@ -300,7 +300,7 @@ test('confit', function (t) {
 
 
     t.test('overrides', function (t) {
-        var basedir;
+        let basedir;
 
         process.env.NODE_ENV = 'dev';
         basedir = path.join(__dirname, 'fixtures', 'defaults');
@@ -326,7 +326,7 @@ test('confit', function (t) {
 
 
     t.test('confit addOverride as json object', function (t) {
-        var basedir;
+        let basedir;
         basedir = path.join(__dirname, 'fixtures', 'config');
         confit(basedir)
             .addOverride({
@@ -363,7 +363,8 @@ test('confit', function (t) {
 
 
     t.test('protocols', function (t) {
-        var basedir, options;
+        let basedir;
+        let options;
 
         process.env.NODE_ENV = 'dev';
         basedir = path.join(__dirname, 'fixtures', 'defaults');
@@ -390,7 +391,8 @@ test('confit', function (t) {
 
 
     t.test('protocols (array)', function (t) {
-        var basedir, options;
+        let basedir;
+        let options;
 
         process.env.NODE_ENV = 'dev';
         basedir = path.join(__dirname, 'fixtures', 'defaults');
@@ -422,7 +424,8 @@ test('confit', function (t) {
 
 
     t.test('error', function (t) {
-        var basedir, options;
+        let basedir;
+        let options;
 
         process.env.NODE_ENV = 'dev';
         basedir = path.join(__dirname, 'fixtures', 'defaults');
@@ -444,7 +447,7 @@ test('confit', function (t) {
 
 
     t.test('malformed', function (t) {
-        var basedir = path.join(__dirname, 'fixtures', 'malformed');
+        const basedir = path.join(__dirname, 'fixtures', 'malformed');
         confit(basedir).create(function (err, config) {
             t.ok(err);
             t.notOk(config);
@@ -454,7 +457,8 @@ test('confit', function (t) {
 
 
     t.test('addOverride', function (t) {
-        var basedir, factory;
+        let basedir;
+        let factory;
 
         process.env.NODE_ENV = 'test';
         basedir = path.join(__dirname, 'fixtures', 'defaults');
@@ -473,7 +477,7 @@ test('confit', function (t) {
 
 
     t.test('addOverride error', function (t) {
-        var basedir;
+        let basedir;
 
 
         t.throws(function () {
@@ -491,8 +495,8 @@ test('confit', function (t) {
 
     t.test('import: with merging objects in imported files', function(t) {
 
-        var basedir = path.join(__dirname, 'fixtures', 'import');
-        var factory = confit(basedir);
+        const basedir = path.join(__dirname, 'fixtures', 'import');
+        const factory = confit(basedir);
         factory.addDefault('override.json');
 
         factory.create(function(err, config) {
@@ -506,9 +510,9 @@ test('confit', function (t) {
     });
 
     t.test('precedence', function (t) {
-        var factory;
-        var argv = process.argv;
-        var env = process.env;
+        let factory;
+        const argv = process.argv;
+        const env = process.env;
 
         process.argv = [ 'node', __filename, '--override=argv'];
         process.env = {
@@ -529,9 +533,10 @@ test('confit', function (t) {
         });
     });
     t.test('env ignore', function (t) {
-        var basedir, options;
+        let basedir;
+        let options;
 
-        var env = process.env = {
+        const env = process.env = {
             NODE_ENV: 'development',
             fromlocal: 'config:local',
             local: 'motion',
