@@ -15,12 +15,11 @@
  \*───────────────────────────────────────────────────────────────────────────*/
 const Path = require('path');
 const caller = require('caller');
-const Thing = require('core-util-is');
 const Factory = require('./lib/factory');
 
 
 module.exports = function confit(options = {}) {
-    if (Thing.isString(options)) {
+    if (typeof options === 'string') {
         options = { basedir: options };
     }
 
