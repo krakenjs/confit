@@ -28,10 +28,11 @@
   ],
   "readmeFilename": "README.md",
   "devDependencies": {
+    "@tapjs/synonyms": "^1.1.19",
     "glob": "^7.1.6",
     "jshint": "^2.11.0",
-    "nyc": "^15.0.0",
-    "tap": "^14.10.8"
+    "nyc": "^15.1.0",
+    "tap": "^18.7.0"
   },
   "dependencies": {
     "async": "^2.6.3",
@@ -40,5 +41,10 @@
     "shortstop": "^1.0.3",
     "shortstop-handlers": "^1.0.1",
     "shush": "^1.0.0"
+  },
+  "tap": {
+    "plugin": [
+      "@tapjs/synonyms"
+    ]
   }
 }
