@@ -202,10 +202,7 @@ test('confit', function (t) {
             .create(function (err, config) {
                 t.ok(err);
                 t.notOk(config);
-                t.equal(err.message, 'Error occured during shortstop resolve in resolveImport');
-                t.equal(err.cause.message, 'Error occured while resolving protocols in case data is of type object/array');
-                t.equal(err.cause.cause.message, 'Error occured during shortstop import in resolveImport');
-                t.equal(err.cause.cause.cause.code, 'MODULE_NOT_FOUND');
+                t.equal(err.code, 'MODULE_NOT_FOUND');
                 t.end();
             });
     });
@@ -443,6 +440,7 @@ test('confit', function (t) {
 
         confit(options).create(function (err, config) {
             t.ok(err);
+            t.equal(err.message, `Error occurred while resolving "path" protocol with value "./config.json" at "path" handler`);
             t.notOk(config);
             t.end();
         });
