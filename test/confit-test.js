@@ -202,7 +202,8 @@ test('confit', function (t) {
             .create(function (err, config) {
                 t.ok(err);
                 t.notOk(config);
-                t.equal(err.code, 'MODULE_NOT_FOUND');
+                t.equal(err.message, `Error occured while resolving "import" protocol with value "./orphan.json" at "unknown" handler`);
+                t.equal(err.cause.code, 'MODULE_NOT_FOUND');
                 t.end();
             });
     });
