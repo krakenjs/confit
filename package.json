@@ -1,6 +1,6 @@
 {
   "name": "confit",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Environment-aware configuration.",
   "main": "index.js",
   "engines": {
@@ -45,7 +45,7 @@
     "async": "^2.6.3",
     "caller": "^1.0.1",
     "minimist": "^1.2.5",
-    "shortstop": "^1.0.3",
+    "shortstop": "^1.1.0",
     "shortstop-handlers": "^1.0.1",
     "shush": "^1.0.0"
   },
