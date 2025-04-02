@@ -1,6 +1,6 @@
 {
   "name": "confit",
-  "version": "3.1.0-beta.3",
+  "version": "3.1.0",
   "description": "Environment-aware configuration.",
   "main": "index.js",
   "engines": {
